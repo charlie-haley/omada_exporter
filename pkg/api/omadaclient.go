@@ -31,7 +31,7 @@ func init(){
         insecure = true
     }
     
-    if insecure = true{
+    if insecure == true{
         http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
     }
 }

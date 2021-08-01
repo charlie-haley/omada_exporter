@@ -45,7 +45,7 @@ If you want to use the ServiceMonitor (which is enabled by default) you'll need 
 ### Environment Variables
 Variable                 | Purpose
 -------------------------|-----------------------------------
-OMADA_HOST               | Host of the Omada Controller SDN
+OMADA_HOST               | Host of the Omada Controller SDN, including protocol.
 OMADA_USER               | Username for the Omada user.
 OMADA_PASS               | Password for the Omada user.
 OMADA_SITE               | Site you'd like to get metrics from.
@@ -56,11 +56,11 @@ OMADA_INSECURE           | Whether to skip verifying the SSL certificate on the 
 ```
 # values.yaml
 omada:
-    host: 192.1.1.20       #Host of the Omada Controller SDN
-    username: exporter     #Username for the Omada user.
-    password: mypassword   #Host of the Omada Controller SDN
-    site: Default          #Site you'd like to get metrics from.
-    insecure: false        #Whether to skip verifying the SSL certificate on the controller, defaults to false.
+    host: "https://192.1.1.20" #Host of the Omada Controller SDN
+    username: "exporter"       #Username for the Omada user.
+    password: "mypassword"     #Host of the Omada Controller SDN
+    site: "Default"            #Site you'd like to get metrics from.
+    insecure: false            #Whether to skip verifying the SSL certificate on the controller, defaults to false.
 ```
 
 ## Metrics
