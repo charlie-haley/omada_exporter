@@ -1,9 +1,11 @@
+---
 name: Docker Build/Publish
 
 on:
   push:
-    branches:
-      - main
+    # Sequence of patterns matched against refs/tags
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:   
   build:    
@@ -31,8 +33,11 @@ jobs:
       if: success()      
       run: |        
         echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin          
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3 | tr -d v)
     - name: Run Buildx (push image)      
       if: success()      
       run: |
-        docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t chhaley/omada_exporter:0.1.1 --push .
+        docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t chhaley/omada_exporter:${{ steps.get_version.outputs.VERSION }} --push .
         docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t chhaley/omada_exporter:latest --push .
