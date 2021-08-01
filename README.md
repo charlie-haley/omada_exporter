@@ -61,7 +61,6 @@ omada:
     password: "mypassword"     #Host of the Omada Controller SDN
     site: "Default"            #Site you'd like to get metrics from.
     insecure: false            #Whether to skip verifying the SSL certificate on the controller, defaults to false.
-    exporterPort: 9202         #Port the exporter should run on, default 9202
 ```
 
 ## Metrics
