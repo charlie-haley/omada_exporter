@@ -29,7 +29,7 @@ docker run -d \
 helm repo add charlie-haley http://charts.charliehaley.dev
 helm repo update
 helm install omada-exporter charlie-haley/omada-exporter \
-    --set omada.ip=192.1.1.20 \ 
+    --set omada.ip=https://192.1.1.20 \ 
     --set omada.username=exporter \
     --set omada.password=mypassword \
     --set omada.site=Default \
