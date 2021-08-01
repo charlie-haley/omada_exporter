@@ -26,7 +26,7 @@ func init(){
     token = ""
     client = http.Client{Timeout: time.Duration(5) * time.Second,  Jar: jar}
 
-    insecure = false
+    insecure := false
     if os.Getenv("OMADA_INSECURE") == "true"{
         insecure = true
     }
