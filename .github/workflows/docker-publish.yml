@@ -1,0 +1,38 @@
+name: Docker Build/Publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:   
+  build:    
+    runs-on: ubuntu-18.04    
+    env:      
+      DOCKER_REGISTRY: registry.hub.docker.com
+      DOCKER_IMAGE: chhaley/omada_exporter     
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}                
+    steps:    
+    - name: Checkout the code       
+      uses: actions/checkout@v1          
+    - name: Set up Docker Buildx      
+      uses: crazy-max/ghaction-docker-buildx@v1      
+      with:        
+        version: latest    
+    - name: Prepare      
+      if: success()      
+      id: prepare      
+      run: |        
+        echo ::set-output name=docker_platform::${DOCKER_TARGET_PLATFORM}        
+        echo ::set-output name=docker_image::${DOCKER_REGISTRY}/${DOCKER_IMAGE}        
+        echo ::set-output name=version::${GITHUB_RUN_NUMBER}    
+    - name: Docker Login      
+      if: success()      
+      run: |        
+        echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin          
+    - name: Run Buildx (push image)      
+      if: success()      
+      run: |
+        docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t chhaley/omada_exporter:0.1.1 --push .
+        docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t chhaley/omada_exporter:latest --push .
