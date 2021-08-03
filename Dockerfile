@@ -5,5 +5,5 @@ WORKDIR /app
 COPY . .
 RUN go build -o main .
 
-EXPOSE 9504
+EXPOSE 9202
 CMD ["/app/main"]
