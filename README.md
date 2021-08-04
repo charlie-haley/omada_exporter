@@ -16,7 +16,7 @@ I *highly* recommend you create a new user in the Omada SDN that has the `Viewer
 ### Docker
 ```
 docker run -d \
-    --network host \
+    -p 9202:9202 \
     -e OMADA_HOST='https://192.168.1.20' \
     -e OMADA_USER='exporter' \
     -e OMADA_PASS='mypassword' \
