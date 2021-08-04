@@ -86,9 +86,9 @@ func getData(){
 						if p.PortStatus.LinkSpeed == 3{
 							linkSpeed = 1000
 						}
-						metrics.Omada_port_power_watts.WithLabelValues(item.HostName, item.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, os.Getenv("OMADA_SITE")).Set(p.PortStatus.PoePower)
-						metrics.Omada_port_link_status.WithLabelValues(item.HostName, item.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, os.Getenv("OMADA_SITE")).Set(p.PortStatus.LinkStatus)
-						metrics.Omada_port_link_speed_mbps.WithLabelValues(item.HostName, item.Vendor, p.SwitchMac, p.SwitchId, port, vlanId, p.ProfileName, os.Getenv("OMADA_SITE")).Set(linkSpeed)
+						metrics.Omada_port_power_watts.WithLabelValues(item.HostName, item.Vendor, port, p.SwitchId, p.SwitchMac, vlanId, p.ProfileName, os.Getenv("OMADA_SITE")).Set(p.PortStatus.PoePower)
+						metrics.Omada_port_link_status.WithLabelValues(item.HostName, item.Vendor, port, p.SwitchId, p.SwitchMac, vlanId, p.ProfileName, os.Getenv("OMADA_SITE")).Set(p.PortStatus.LinkStatus)
+						metrics.Omada_port_link_speed_mbps.WithLabelValues(item.HostName, item.Vendor, p.SwitchId, p.SwitchMac, port, vlanId, p.ProfileName, os.Getenv("OMADA_SITE")).Set(linkSpeed)
 					}
 				}	
 				metrics.Omada_download_activity_bytes.WithLabelValues(item.HostName, item.Vendor, port, vlanId, item.Ip, item.Mac, os.Getenv("OMADA_SITE")).Set(item.Activity)
