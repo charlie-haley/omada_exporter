@@ -30,12 +30,12 @@ func getData(){
 		devices, err := omadaclient.GetDevices()
 		if err != nil {
 			log.Error(fmt.Sprintf("Failed to get devices: %s", err))
-			return
+			continue
 		}
 		clients, err := omadaclient.GetClients()
 		if err != nil {
 			log.Error(fmt.Sprintf("Failed to get clients: %s", err))
-			return
+			continue
 		}
 		var ports []structs.Port
 
@@ -57,7 +57,7 @@ func getData(){
 				switchPorts, err := omadaclient.GetPorts(item.Mac)
 				if err != nil {
 					log.Error(fmt.Sprintf("Failed to get ports: %s", err))
-					return
+					continue
 				}
 				ports = append(ports, switchPorts...)
 			}
