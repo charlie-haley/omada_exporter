@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
 	log "github.com/sirupsen/logrus"
 
-	"omada_exporter/pkg/prometheus"
-	"omada_exporter/pkg/api"
+	omadaclient "omada_exporter/pkg/api"
 	"omada_exporter/pkg/api/structs"
+	metrics "omada_exporter/pkg/prometheus"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -16,7 +17,7 @@ import (
 func main() {
 	go getData()
 	exporterPort := os.Getenv("OMADA_EXPORTER_PORT")
-	if(exporterPort == ""){
+	if exporterPort == "" {
 		exporterPort = "9202"
 	}
 
@@ -25,7 +26,7 @@ func main() {
 	http.ListenAndServe(fmt.Sprintf(":%s", exporterPort), nil)
 }
 
-func getData(){
+func getData() {
 	for {
 		devices, err := omadaclient.GetDevices()
 		if err != nil {
@@ -38,10 +39,12 @@ func getData(){
 			continue
 		}
 		var ports []structs.Port
+		//ensure slice is empty
+		ports = nil
 
 		for _, item := range devices {
 			needUpgrade := float64(0)
-			if item.NeedUpgrade == true {
+			if item.NeedUpgrade {
 				needUpgrade = 1
 			}
 			metrics.Omada_uptime_seconds.WithLabelValues(item.Name, item.Model, item.Version, item.Ip, item.Mac, os.Getenv("OMADA_SITE"), item.Type).Set(item.Uptime)
@@ -65,32 +68,32 @@ func getData(){
 		for _, item := range clients {
 			vlanId := fmt.Sprintf("%.0f", item.VlanId)
 			port := fmt.Sprintf("%.0f", item.Port)
-			if item.Wireless == true {
+			if item.Wireless {
 				wifiMode := fmt.Sprintf("%.0f", item.WifiMode)
 				metrics.Omada_download_activity_bytes_wlan.WithLabelValues(item.HostName, item.Vendor, item.Ip, item.Mac, item.ApName, os.Getenv("OMADA_SITE"), item.Ssid, wifiMode).Set(item.Activity)
 				metrics.Omada_client_signal_dbm.WithLabelValues(item.HostName, item.Vendor, item.Ip, item.Mac, item.ApName, os.Getenv("OMADA_SITE"), item.Ssid, wifiMode).Set(item.SignalLevel)
 			}
-			if item.Wireless == false {
+			if item.Wireless {
 				for _, p := range ports {
 					if p.SwitchMac == item.SwitchMac && p.Port == item.Port {
 						linkSpeed := float64(0)
-						if p.PortStatus.LinkSpeed == 0{
+						if p.PortStatus.LinkSpeed == 0 {
 							linkSpeed = 0
 						}
-						if p.PortStatus.LinkSpeed == 1{
+						if p.PortStatus.LinkSpeed == 1 {
 							linkSpeed = 10
 						}
-						if p.PortStatus.LinkSpeed == 2{
+						if p.PortStatus.LinkSpeed == 2 {
 							linkSpeed = 100
 						}
-						if p.PortStatus.LinkSpeed == 3{
+						if p.PortStatus.LinkSpeed == 3 {
 							linkSpeed = 1000
 						}
 						metrics.Omada_port_power_watts.WithLabelValues(item.HostName, item.Vendor, port, p.SwitchId, p.SwitchMac, vlanId, p.ProfileName, os.Getenv("OMADA_SITE")).Set(p.PortStatus.PoePower)
 						metrics.Omada_port_link_status.WithLabelValues(item.HostName, item.Vendor, port, p.SwitchId, p.SwitchMac, vlanId, p.ProfileName, os.Getenv("OMADA_SITE")).Set(p.PortStatus.LinkStatus)
 						metrics.Omada_port_link_speed_mbps.WithLabelValues(item.HostName, item.Vendor, p.SwitchId, p.SwitchMac, port, vlanId, p.ProfileName, os.Getenv("OMADA_SITE")).Set(linkSpeed)
 					}
-				}	
+				}
 				metrics.Omada_download_activity_bytes.WithLabelValues(item.HostName, item.Vendor, port, vlanId, item.Ip, item.Mac, os.Getenv("OMADA_SITE")).Set(item.Activity)
 			}
 		}
