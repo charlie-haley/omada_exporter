@@ -15,16 +15,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var httpclient http.Client
 var token string
 
-func init() {
+func httpClient() *http.Client {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		log.Error("Failed to init cookiejar")
 	}
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.MaxIdleConns = 100
+	t.MaxConnsPerHost = 100
+	t.MaxIdleConnsPerHost = 100
+
 	token = ""
-	httpclient = http.Client{Timeout: time.Duration(5) * time.Second, Jar: jar}
+	client := &http.Client{Transport: t, Timeout: time.Duration(5) * time.Second, Jar: jar}
 
 	insecure := false
 	if os.Getenv("OMADA_INSECURE") == "true" {
@@ -32,8 +36,10 @@ func init() {
 	}
 
 	if insecure {
-		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
+
+	return client
 }
 
 func setHeaders(r *http.Request) {
@@ -47,9 +53,9 @@ func setHeaders(r *http.Request) {
 
 func isLoggedIn() (bool, error) {
 	loginstatus := loginStatus{}
+	c := httpClient()
 
 	url := fmt.Sprintf("%s/api/v2/loginStatus", os.Getenv("OMADA_HOST"))
-	log.Error(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return false, err
@@ -61,20 +67,19 @@ func isLoggedIn() (bool, error) {
 
 	setHeaders(req)
 
-	res, err := httpclient.Do(req)
+	res, err := c.Do(req)
 	if err != nil {
 		return false, err
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
-	log.Error(string(body))
 	if err != nil {
 		return false, err
 	}
 
 	err = json.Unmarshal(body, &loginstatus)
-	if loginstatus.ErrorCode != 0 {
+	if loginstatus.ErrorCode != "0" {
 		return false, errors.New(fmt.Sprintf("Invalid error code returned from API. Response Body: %s", string(body)))
 	}
 
@@ -83,6 +88,7 @@ func isLoggedIn() (bool, error) {
 
 func Login() (string, error) {
 	logindata := loginResponse{}
+	c := httpClient()
 
 	url := fmt.Sprintf("%s/api/v2/login", os.Getenv("OMADA_HOST"))
 	jsonStr := []byte(fmt.Sprintf(`{"username":"%s","password":"%s"}`, os.Getenv("OMADA_USER"), os.Getenv("OMADA_PASS")))
@@ -92,7 +98,7 @@ func Login() (string, error) {
 	}
 
 	setHeaders(req)
-	res, err := httpclient.Do(req)
+	res, err := c.Do(req)
 	if err != nil {
 		log.Error(err)
 		return "", err
@@ -114,16 +120,17 @@ func Login() (string, error) {
 }
 
 func GetDevices() ([]device, error) {
-	loggedIn, err := isLoggedIn()
+	devicedata := deviceResponse{}
+	c := httpClient()
+
+	loggedIn, _ := isLoggedIn()
 	if !loggedIn {
 		log.Info(fmt.Sprintf("Not logged in, logging in with user: %s...", os.Getenv("OMADA_USER")))
-		token, err = Login()
-	}
-
-	devicedata := deviceResponse{}
-	if err != nil || token == "" {
-		log.Error(fmt.Sprintf("Failed to login: %s", err))
-		return devicedata.Result, err
+		token, err := Login()
+		if err != nil || token == "" {
+			log.Error(fmt.Sprintf("Failed to login: %s", err))
+			return devicedata.Result, err
+		}
 	}
 
 	url := fmt.Sprintf("%s/api/v2/sites/%s/devices", os.Getenv("OMADA_HOST"), os.Getenv("OMADA_SITE"))
@@ -134,7 +141,7 @@ func GetDevices() ([]device, error) {
 	req.URL.RawQuery = q.Encode()
 
 	setHeaders(req)
-	resp, err := httpclient.Do(req)
+	resp, err := c.Do(req)
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -145,11 +152,17 @@ func GetDevices() ([]device, error) {
 }
 
 func GetClients() ([]client, error) {
-	token, err := Login()
 	clientdata := clientResponse{}
-	if err != nil || token == "" {
-		log.Error(fmt.Sprintf("Failed to login: %s", err))
-		return clientdata.Result.Data, err
+	c := httpClient()
+	loggedIn, _ := isLoggedIn()
+
+	if !loggedIn {
+		log.Info(fmt.Sprintf("Not logged in, logging in with user: %s...", os.Getenv("OMADA_USER")))
+		token, err := Login()
+		if err != nil || token == "" {
+			log.Error(fmt.Sprintf("Failed to login: %s", err))
+			return clientdata.Result.Data, err
+		}
 	}
 
 	url := fmt.Sprintf("%s/api/v2/sites/%s/clients", os.Getenv("OMADA_HOST"), os.Getenv("OMADA_SITE"))
@@ -162,7 +175,7 @@ func GetClients() ([]client, error) {
 	req.URL.RawQuery = q.Encode()
 
 	setHeaders(req)
-	resp, err := httpclient.Do(req)
+	resp, err := c.Do(req)
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -173,6 +186,7 @@ func GetClients() ([]client, error) {
 }
 
 func GetPorts(switchMac string) ([]Port, error) {
+	c := httpClient()
 	token, err := Login()
 	portdata := portResponse{}
 	if err != nil || token == "" {
@@ -187,7 +201,7 @@ func GetPorts(switchMac string) ([]Port, error) {
 	req.URL.RawQuery = q.Encode()
 
 	setHeaders(req)
-	resp, err := httpclient.Do(req)
+	resp, err := c.Do(req)
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)

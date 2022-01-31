@@ -70,7 +70,7 @@ type loginResult struct {
 }
 
 type loginStatus struct {
-	ErrorCode int            `json:"errorCode"`
+	ErrorCode string         `json:"errorCode"`
 	Result    loggedInResult `json:"result"`
 }
 type loggedInResult struct {
