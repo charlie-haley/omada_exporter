@@ -1,20 +1,16 @@
 # omada_exporter
 ![docker-publish](https://github.com/charlie-haley/omada_exporter/actions/workflows/docker-publish.yml/badge.svg)
-
-Prometheus Exporter for TP-Link Omada Controller SDN.
-
-### Tested Devices
-- TL-SG3428MP
-- EAP245 Access Point
+<p align="center" style="text-align: center">
+    <img src="./docs/images/logo.svg" width="70%"><br/>
+    Prometheus Exporter for TP-Link Omada Controller SDN. <br/>
+</p>
 
 ## Installation
-The exporter listens on port `9202` by default. It can be overidden with the `OMADA_EXPORTER_PORT` environment variable.
 
-### TP-Link Omada User
-I *highly* recommend you create a new user in the Omada SDN that has the `Viewer` role and use that to authenticate instead of your primary admin user.
+__I *highly* recommend you create a new user in the Omada SDN that has the `Viewer` role and use that to authenticate instead of your primary admin user.__
 
-### Docker
-```
+### 🐋 Docker
+```bash
 docker run -d \
     -p 9202:9202 \
     -e OMADA_HOST='https://192.168.1.20' \
@@ -24,8 +20,8 @@ docker run -d \
     chhaley/omada_exporter
 ```
 
-### Helm
-```
+### ☸️ Helm
+```bash
 helm repo add charlie-haley http://charts.charliehaley.dev
 helm repo update
 helm install omada-exporter charlie-haley/omada-exporter \
@@ -40,30 +36,62 @@ If you want to use the ServiceMonitor (which is enabled by default) you'll need 
 
 [You can find the chart repo here](https://github.com/charlie-haley/private-charts), if you'd like to contribute.
 
-## Configuration
+### 🖥️ Command Line
+```
+NAME:
+   omada_exporter - Prometheus Exporter for TP-Link Omada Controller SDN.
+
+USAGE:
+   main [global options] command [command options] [arguments...]
+
+VERSION:
+   development
+
+AUTHOR:
+   Charlie Haley <charlie-haley@users.noreply.github.com>
+
+COMMANDS:
+   version, v  prints the current version.
+   help, h     Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --host value      The hostname of the Omada Controller, including protocol. [$OMADA_HOST]
+   --username value  Username of the Omada user you'd like to use to fetch metrics. [$OMADA_USER]
+   --password value  Password for your Omada user. [$OMADA_PASS]
+   --port value      Port on which to expose the Prometheus metrics. (default: "9202") [$OMADA_PORT]
+   --site value      Password for your Omada user. [$OMADA_SITE]
+   --interval value  Interval between scrapes, in seconds. (default: 5) [$OMADA_SCRAPE_INTERVAL]
+   --insecure        Whether to skip verifying the SSL certificate on the controller. (default: false) [$OMADA_INSECURE]
+   --help, -h        show help (default: false)
+   --version, -v     print the version (default: false)
+```
+
+## ⚙️ Configuration
 
 ### Environment Variables
 Variable                 | Purpose
 -------------------------|-----------------------------------
-OMADA_HOST               | Host of the Omada Controller SDN, including protocol.
-OMADA_USER               | Username for the Omada user.
-OMADA_PASS               | Password for the Omada user.
-OMADA_SITE               | Site you'd like to get metrics from.
-OMADA_EXPORTER_PORT      | Port the exporter should run on, default 9202
-OMADA_INSECURE           | Whether to skip verifying the SSL certificate on the controller, defaults to false.
+OMADA_HOST               | The hostname of the Omada Controller, including protocol.
+OMADA_USER               | Username of the Omada user you'd like to use to fetch metrics.
+OMADA_PASS               | Password for your Omada user.
+OMADA_SITE               | Site you'd like to get metrics from. (default: "Default")
+OMADA_PORT               | Port on which to expose the Prometheus metrics. (default: 9202)
+OMADA_INSECURE           | Whether to skip verifying the SSL certificate on the controller. (default: false)
+OMADA_SCRAPE_INTERVAL    | Interval between scrapes, in seconds. (default: 5)
 
 ### Helm
 ```
 # values.yaml
 omada:
-    host: "https://192.1.1.20" #Host of the Omada Controller SDN
-    username: "exporter"       #Username for the Omada user.
-    password: "mypassword"     #Host of the Omada Controller SDN
-    site: "Default"            #Site you'd like to get metrics from.
-    insecure: false            #Whether to skip verifying the SSL certificate on the controller, defaults to false.
+    host: "https://192.1.1.20" # The hostname of the Omada Controller, including protocol.
+    username: "exporter"       # Username of the Omada user you'd like to use to fetch metrics.
+    password: "mypassword"     # Password for your Omada user.
+    site: "Default"            # Site you'd like to get metrics from. (default: "Default")
+    insecure: false            # Whether to skip verifying the SSL certificate on the controller. (default: false)
+    scrape_interval: 5         # Interval between scrapes, in seconds. (default: 5)
 ```
 
-## Metrics
+## 📊 Metrics
 Name                               | Description                                                 | Labels
 -----------------------------------|-------------------------------------------------------------|---------------------------------------------------
 omada_uptime_seconds               | Uptime of the device.                                       | device, model, version, ip, mac, site, device_type
