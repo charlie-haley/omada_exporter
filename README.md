@@ -1,7 +1,8 @@
 # omada_exporter
 ![docker-publish](https://github.com/charlie-haley/omada_exporter/actions/workflows/docker-publish.yml/badge.svg)
 <p align="center" style="text-align: center">
-    <img src="./docs/images/logo.svg" width="70%"><br/>
+    <img src="./docs/images/logo-dark-mode.svg#gh-dark-mode-only" width="70%"><br/>
+    <img src="./docs/images/logo-light-mode.svg#gh-light-mode-only" width="70%"><br/>
     Prometheus Exporter for TP-Link Omada Controller SDN. <br/>
 </p>
 
