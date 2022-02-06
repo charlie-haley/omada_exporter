@@ -9,9 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (c *Client) GetDevices() ([]device, error) {
-	devicedata := deviceResponse{}
-
+func (c *Client) GetDevices() ([]Device, error) {
 	loggedIn, err := c.IsLoggedIn()
 	if err != nil {
 		log.Error(err)
@@ -22,7 +20,7 @@ func (c *Client) GetDevices() ([]device, error) {
 		err := c.Login()
 		if err != nil || c.token == "" {
 			log.Error(fmt.Errorf("failed to login: %s", err))
-			return devicedata.Result, err
+			return nil, err
 		}
 	}
 
@@ -47,15 +45,29 @@ func (c *Client) GetDevices() ([]device, error) {
 		return nil, err
 	}
 
+	devicedata := deviceResponse{}
 	err = json.Unmarshal(body, &devicedata)
+
+	var ports []Port
+	for i, d := range devicedata.Result {
+		if d.Type == "switch" {
+			switchPorts, err := c.GetPorts(d.Mac)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get ports: %s", err)
+			}
+			ports = append(ports, switchPorts...)
+			device := &devicedata.Result[i]
+			device.Ports = ports
+		}
+	}
 
 	return devicedata.Result, err
 }
 
 type deviceResponse struct {
-	Result []device `json:"result"`
+	Result []Device `json:"result"`
 }
-type device struct {
+type Device struct {
 	Name        string  `json:"name"`
 	Type        string  `json:"type"`
 	Mac         string  `json:"mac"`
@@ -69,4 +81,5 @@ type device struct {
 	TxRate      float64 `json:"txRate"`
 	RxRate      float64 `json:"rxRate"`
 	PoeRemain   float64 `json:"poeRemain"`
+	Ports       []Port  `json:"ports"`
 }

@@ -10,7 +10,6 @@ import (
 )
 
 func (c *Client) GetPorts(switchMac string) ([]Port, error) {
-	portdata := portResponse{}
 	loggedIn, err := c.IsLoggedIn()
 	if err != nil {
 		log.Error(err)
@@ -21,7 +20,7 @@ func (c *Client) GetPorts(switchMac string) ([]Port, error) {
 		err := c.Login()
 		if err != nil || c.token == "" {
 			log.Error(fmt.Errorf("failed to login: %s", err))
-			return portdata.Result, err
+			return nil, err
 		}
 	}
 
@@ -46,6 +45,7 @@ func (c *Client) GetPorts(switchMac string) ([]Port, error) {
 		return nil, err
 	}
 
+	portdata := portResponse{}
 	err = json.Unmarshal(body, &portdata)
 
 	return portdata.Result, err

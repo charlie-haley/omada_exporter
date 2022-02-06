@@ -9,9 +9,34 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (c *Client) GetClients() ([]client, error) {
-	clientdata := clientResponse{}
+// gets clients by switch mac address
+func (c *Client) GetClientByPort(switchMac string, port float64) (*NetworkClient, error) {
+	clients, err := c.getClientsWithFilters(true, switchMac)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	for _, client := range clients {
+		if client.Port == port {
+			return &client, nil
+		}
+	}
+	return nil, nil
+}
 
+// gets all clients
+func (c *Client) GetClients() ([]NetworkClient, error) {
+	client, err := c.getClientsWithFilters(false, "")
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	return client, nil
+}
+
+// gets clients by filters in omada - currentl supports SwitchMac
+func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]NetworkClient, error) {
 	loggedIn, err := c.IsLoggedIn()
 	if err != nil {
 		log.Error(err)
@@ -22,7 +47,7 @@ func (c *Client) GetClients() ([]client, error) {
 		err := c.Login()
 		if err != nil || c.token == "" {
 			log.Error(fmt.Sprintf("Failed to login: %s", err))
-			return clientdata.Result.Data, err
+			return nil, err
 		}
 	}
 
@@ -37,6 +62,10 @@ func (c *Client) GetClients() ([]client, error) {
 	q.Add("currentPage", "1")
 	q.Add("currentPageSize", "10000")
 	q.Add("filters.active", "true")
+	if filtersEnabled {
+		q.Add("filters.switchMac=", mac)
+	}
+
 	req.URL.RawQuery = q.Encode()
 
 	setHeaders(req, c.token)
@@ -53,6 +82,7 @@ func (c *Client) GetClients() ([]client, error) {
 		return nil, err
 	}
 
+	clientdata := clientResponse{}
 	err = json.Unmarshal(body, &clientdata)
 
 	return clientdata.Result.Data, err
@@ -62,9 +92,9 @@ type clientResponse struct {
 	Result data `json:"result"`
 }
 type data struct {
-	Data []client `json:"data"`
+	Data []NetworkClient `json:"data"`
 }
-type client struct {
+type NetworkClient struct {
 	Name        string  `json:"name"`
 	HostName    string  `json:"hostName"`
 	Mac         string  `json:"mac"`

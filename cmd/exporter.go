@@ -8,6 +8,7 @@ import (
 
 	"github.com/charlie-haley/omada_exporter/pkg/api"
 	"github.com/charlie-haley/omada_exporter/pkg/omada"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -15,13 +16,15 @@ import (
 
 var version = "development"
 var (
-	host     string
-	username string
-	password string
-	port     string
-	site     string
-	interval int
-	insecure bool
+	host                     string
+	username                 string
+	password                 string
+	port                     string
+	site                     string
+	interval                 int
+	insecure                 bool
+	goCollectorDisabled      bool
+	processCollectorDisabled bool
 )
 
 func Run() {
@@ -41,6 +44,8 @@ func Run() {
 		&cli.StringFlag{Destination: &site, Name: "site", Value: "Default", Usage: "Omada site to scrape metrics from.", EnvVars: []string{"OMADA_SITE"}},
 		&cli.IntFlag{Destination: &interval, Name: "interval", Value: 5, Usage: "Interval between scrapes, in seconds.", EnvVars: []string{"OMADA_SCRAPE_INTERVAL"}},
 		&cli.BoolFlag{Destination: &insecure, Name: "insecure", Value: false, Usage: "Whether to skip verifying the SSL certificate on the controller.", EnvVars: []string{"OMADA_INSECURE"}},
+		&cli.BoolFlag{Destination: &goCollectorDisabled, Name: "disable-go-collector", Value: false, Usage: "Disable Go collector metrics.", EnvVars: []string{"OMADA_DISABLE_GO_COLLECTOR"}},
+		&cli.BoolFlag{Destination: &processCollectorDisabled, Name: "disable-process-collector", Value: false, Usage: "Disable process collector metrics.", EnvVars: []string{"OMADA_DISABLE_PROCESS_COLLECTOR"}},
 	}
 	app.Commands = []*cli.Command{
 		{Name: "version", Aliases: []string{"v"}, Usage: "prints the current version.",
@@ -60,6 +65,15 @@ func Run() {
 }
 
 func run(c *cli.Context) error {
+	if goCollectorDisabled {
+		// remove Go collector
+		prometheus.Unregister(prometheus.NewGoCollector())
+	}
+	if processCollectorDisabled {
+		// remove Process collector
+		prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	}
+
 	client, err := api.Configure(c)
 	if err != nil {
 		return err
