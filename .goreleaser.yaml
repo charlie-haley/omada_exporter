@@ -23,11 +23,11 @@ builds:
 
 dockers:
   - image_templates:
-      - "chhaley/omada-exporter:latest-amd64"
-      - "chhaley/omada-exporter:{{ .Version }}-amd64"
-      - "chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-amd64"
-      - "chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}-amd64"
-      - "chhaley/omada-exporter:{{ .Major }}-amd64"
+      - "chhaley/omada_exporter:latest-amd64"
+      - "chhaley/omada_exporter:{{ .Version }}-amd64"
+      - "chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-amd64"
+      - "chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}-amd64"
+      - "chhaley/omada_exporter:{{ .Major }}-amd64"
     use: buildx
     dockerfile: Dockerfile
     goarch: amd64
@@ -42,11 +42,11 @@ dockers:
       - "--build-arg=VCS_REF={{.FullCommit}}"
       - "--platform=linux/amd64"
   - image_templates:
-      - "chhaley/omada-exporter:latest-arm64v8"
-      - "chhaley/omada-exporter:{{ .Version }}-arm64v8"
-      - "chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-arm64v8"
-      - "chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}-arm64v8"
-      - "chhaley/omada-exporter:{{ .Major }}-arm64v8"
+      - "chhaley/omada_exporter:latest-arm64v8"
+      - "chhaley/omada_exporter:{{ .Version }}-arm64v8"
+      - "chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-arm64v8"
+      - "chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}-arm64v8"
+      - "chhaley/omada_exporter:{{ .Major }}-arm64v8"
     use: buildx
     dockerfile: Dockerfile
     goarch: arm64
@@ -62,30 +62,30 @@ dockers:
     - "--platform=linux/arm64/v8"
 
 docker_manifests:
-  - name_template: chhaley/omada-exporter:latest
+  - name_template: chhaley/omada_exporter:latest
     image_templates:
-    - chhaley/omada-exporter:latest-amd64
-    - chhaley/omada-exporter:latest-arm64v8
+    - chhaley/omada_exporter:latest-amd64
+    - chhaley/omada_exporter:latest-arm64v8
 
-  - name_template: chhaley/omada-exporter:{{ .Version }}
+  - name_template: chhaley/omada_exporter:{{ .Version }}
     image_templates:
-    - chhaley/omada-exporter:{{ .Version }}-amd64
-    - chhaley/omada-exporter:{{ .Version }}-arm64v8
+    - chhaley/omada_exporter:{{ .Version }}-amd64
+    - chhaley/omada_exporter:{{ .Version }}-arm64v8
 
-  - name_template: chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}
+  - name_template: chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}
     image_templates:
-    - chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-amd64
-    - chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-arm64v8
+    - chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-amd64
+    - chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-arm64v8
 
-  - name_template: chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}
+  - name_template: chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}
     image_templates:
-    - chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}-amd64
-    - chhaley/omada-exporter:{{ .Major }}.{{ .Minor }}-arm64v8
+    - chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}-amd64
+    - chhaley/omada_exporter:{{ .Major }}.{{ .Minor }}-arm64v8
 
-  - name_template: chhaley/omada-exporter:{{ .Major }}
+  - name_template: chhaley/omada_exporter:{{ .Major }}
     image_templates:
-    - chhaley/omada-exporter:{{ .Major }}-amd64
-    - chhaley/omada-exporter:{{ .Major }}-arm64v8
+    - chhaley/omada_exporter:{{ .Major }}-amd64
+    - chhaley/omada_exporter:{{ .Major }}-arm64v8
 
 release:
   prerelease: auto
