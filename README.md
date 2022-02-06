@@ -40,7 +40,7 @@ If you want to use the ServiceMonitor (which is enabled by default) you'll need 
 ### 🖥️ Command Line
 ```
 NAME:
-   omada_exporter - Prometheus Exporter for TP-Link Omada Controller SDN.
+   omada-exporter - Prometheus Exporter for TP-Link Omada Controller SDN.
 
 USAGE:
    main [global options] command [command options] [arguments...]
