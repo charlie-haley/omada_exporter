@@ -49,7 +49,7 @@ func Scrape(c *api.Client) error {
 			omada_download_activity_bytes_wlan.WithLabelValues(item.HostName, item.Vendor, item.Ip, item.Mac, item.ApName, c.Config.String("site"), item.Ssid, wifiMode).Set(item.Activity)
 			omada_client_signal_dbm.WithLabelValues(item.HostName, item.Vendor, item.Ip, item.Mac, item.ApName, c.Config.String("site"), item.Ssid, wifiMode).Set(item.SignalLevel)
 		}
-		if item.Wireless {
+		if !item.Wireless {
 			for _, p := range ports {
 				if p.SwitchMac == item.SwitchMac && p.Port == item.Port {
 					linkSpeed := float64(0)
