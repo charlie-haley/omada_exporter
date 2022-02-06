@@ -1,5 +1,5 @@
 FROM golang:alpine3.14
 
-COPY omada_exporter /
+COPY omada-exporter /
 
-CMD ["omada_exporter"]
+CMD ["omada-exporter"]
