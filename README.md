@@ -38,6 +38,7 @@ If you want to use the ServiceMonitor (which is enabled by default) you'll need 
 [You can find the chart repo here](https://github.com/charlie-haley/private-charts), if you'd like to contribute.
 
 ### 🖥️ Command Line
+[You can download the latest binary release here.](https://github.com/charlie-haley/omada_exporter/releases/latest)
 ```
 NAME:
    omada-exporter - Prometheus Exporter for TP-Link Omada Controller SDN.
