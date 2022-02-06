@@ -26,4 +26,4 @@ jobs:
       uses: goreleaser/goreleaser-action@v2.8.1
       with:
         version: latest
-        args: build
+        args: build --skip-validate 
