@@ -6,6 +6,15 @@
     Prometheus Exporter for TP-Link Omada Controller SDN. <br/>
 </p>
 
+### 📈 Dashboard
+
+There's a [default dashboard in this repo](./dashboard.json), which would be a good starting point for visualising your metrics.
+
+<p align="center" style="text-align: center">
+    <img src="./docs/images/dashboard-dark-mode.png#gh-dark-mode-only" width="70%"><br/>
+    <img src="./docs/images/dashboard-light-mode.png#gh-light-mode-only" width="70%"><br/>
+</p>
+
 ## Installation
 
 __I *highly* recommend you create a new user in the Omada SDN that has the `Viewer` role and use that to authenticate instead of your primary admin user.__
