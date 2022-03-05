@@ -95,4 +95,10 @@ var (
 		Help: "Total storage available for the controller.",
 	},
 		[]string{"storage_name", "controller_name", "model", "controller_version", "firmware_version", "mac"})
+
+	omada_connected_clients_count = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "omada_connected_clients_count",
+		Help: "Total number of connected clients.",
+	},
+		[]string{"site"})
 )
