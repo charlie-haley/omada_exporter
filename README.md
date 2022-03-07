@@ -124,3 +124,4 @@ Name|Description|Labels
  omada_controller_uptime_seconds |  Uptime of the controller. | controller_name, model, controller_version, firmware_version, mac
  omada_controller_storage_used_bytes |  Storage used on the controller. | storage_name, controller_name, model, controller_version, firmware_version, mac
  omada_controller_storage_available_bytes |  Total storage available for the controller. | storage_name, controller_name, model, controller_version, firmware_version, mac
+ omada_client_connected_total |  Total number of connected clients. | site

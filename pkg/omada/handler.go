@@ -108,7 +108,7 @@ func setPortMetricsByDevice(c *api.Client, device api.Device, site string) error
 
 // set prometheus metrics for clients
 func setClientMetrics(clients []api.NetworkClient, site string) {
-	omada_connected_clients_count.WithLabelValues(site).Set(float64(len(clients)))
+	omada_client_connected_total.WithLabelValues(site).Set(float64(len(clients)))
 
 	for _, item := range clients {
 		vlanId := fmt.Sprintf("%.0f", item.VlanId)
