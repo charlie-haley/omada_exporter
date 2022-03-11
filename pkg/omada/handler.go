@@ -39,7 +39,7 @@ func Scrape(c *api.Client) error {
 
 // set prometheus metrics for controller
 func setControllerMetrics(controller *api.Controller) {
-	omada_controller_uptime_seconds.WithLabelValues(controller.Name, controller.Model, controller.ControllerVersion, controller.ControllerVersion, controller.MacAddress).Set(controller.Uptime)
+	omada_controller_uptime_seconds.WithLabelValues(controller.Name, controller.Model, controller.ControllerVersion, controller.ControllerVersion, controller.MacAddress).Set(controller.Uptime / 1000)
 	for _, s := range controller.Storage {
 		omada_controller_storage_used_bytes.WithLabelValues(s.Name, controller.Name, controller.Model, controller.ControllerVersion, controller.ControllerVersion, controller.MacAddress).Set(s.Used * 1000000000)
 		omada_controller_storage_available_bytes.WithLabelValues(s.Name, controller.Name, controller.Model, controller.ControllerVersion, controller.ControllerVersion, controller.MacAddress).Set(s.Total * 1000000000)
