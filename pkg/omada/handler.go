@@ -93,12 +93,12 @@ func setPortMetricsByDevice(c *api.Client, device api.Device, site string) error
 		if client != nil {
 			vlanId := fmt.Sprintf("%.0f", client.VlanId)
 
-			omada_port_power_watts.WithLabelValues(client.HostName, client.Vendor, port, p.SwitchId, p.SwitchMac, vlanId, p.ProfileName, site).Set(p.PortStatus.PoePower)
-			omada_port_link_status.WithLabelValues(client.HostName, client.Vendor, port, p.SwitchId, p.SwitchMac, vlanId, p.ProfileName, site).Set(p.PortStatus.LinkStatus)
+			omada_port_power_watts.WithLabelValues(client.HostName, client.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site).Set(p.PortStatus.PoePower)
+			omada_port_link_status.WithLabelValues(client.HostName, client.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site).Set(p.PortStatus.LinkStatus)
 			omada_port_link_speed_mbps.WithLabelValues(client.HostName, client.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site).Set(linkSpeed)
 		} else {
-			omada_port_power_watts.WithLabelValues("", "", port, p.SwitchId, p.SwitchMac, "", p.ProfileName, site).Set(p.PortStatus.PoePower)
-			omada_port_link_status.WithLabelValues("", "", port, p.SwitchId, p.SwitchMac, "", p.ProfileName, site).Set(p.PortStatus.LinkStatus)
+			omada_port_power_watts.WithLabelValues("", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site).Set(p.PortStatus.PoePower)
+			omada_port_link_status.WithLabelValues("", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site).Set(p.PortStatus.LinkStatus)
 			omada_port_link_speed_mbps.WithLabelValues("", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site).Set(linkSpeed)
 		}
 
