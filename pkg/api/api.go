@@ -58,7 +58,7 @@ func setHeaders(r *http.Request, crsfToken string) {
 	r.Header.Add("Content-Type", "application/json; charset=UTF-8")
 	r.Header.Add("X-Requested-With", "XMLHttpRequest")
 	r.Header.Add("User-Agent", "omada_exporter")
-	r.Header.Add("accept-encoding", "gzip, deflate, br")
+	r.Header.Add("Accept-Encoding", "gzip, deflate, br")
 	r.Header.Add("Connection", "keep-alive")
 	r.Header.Add("Csrf-Token", crsfToken)
 }
