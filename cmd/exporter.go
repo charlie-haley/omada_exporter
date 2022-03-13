@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/charlie-haley/omada_exporter/pkg/api"
@@ -72,6 +73,12 @@ func run(c *cli.Context) error {
 	if processCollectorDisabled {
 		// remove Process collector
 		prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	}
+
+	// check if host is properly formatted
+	if strings.HasSuffix(host, "/") {
+		// remove trailing slash if it exists
+		host = strings.TrimRight(host, "/")
 	}
 
 	client, err := api.Configure(c)

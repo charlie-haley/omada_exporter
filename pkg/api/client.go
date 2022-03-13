@@ -13,7 +13,6 @@ import (
 func (c *Client) GetClientByPort(switchMac string, port float64) (*NetworkClient, error) {
 	clients, err := c.getClientsWithFilters(true, switchMac)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 	for _, client := range clients {
@@ -28,7 +27,6 @@ func (c *Client) GetClientByPort(switchMac string, port float64) (*NetworkClient
 func (c *Client) GetClients() ([]NetworkClient, error) {
 	client, err := c.getClientsWithFilters(false, "")
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 
@@ -39,11 +37,10 @@ func (c *Client) GetClients() ([]NetworkClient, error) {
 func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]NetworkClient, error) {
 	loggedIn, err := c.IsLoggedIn()
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 	if !loggedIn {
-		log.Info(fmt.Sprintf("Not logged in, logging in with user: %s...", c.Config.String("username")))
+		log.Info(fmt.Sprintf("not logged in, logging in with user: %s", c.Config.String("username")))
 		err := c.Login()
 		if err != nil || c.token == "" {
 			log.Error(fmt.Sprintf("Failed to login: %s", err))
@@ -51,10 +48,9 @@ func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]Netwo
 		}
 	}
 
-	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/clients", c.Config.String("host"), c.omadaCID, c.Config.String("site"))
+	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/clients", c.Config.String("host"), c.omadaCID, c.siteId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 
@@ -71,14 +67,12 @@ func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]Netwo
 	setHeaders(req, c.token)
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 

@@ -12,7 +12,6 @@ import (
 func (c *Client) GetController() (*Controller, error) {
 	loggedIn, err := c.IsLoggedIn()
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 	if !loggedIn {
@@ -27,21 +26,18 @@ func (c *Client) GetController() (*Controller, error) {
 	url := fmt.Sprintf("%s/%s/api/v2/maintenance/controllerStatus?", c.Config.String("host"), c.omadaCID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 
 	setHeaders(req, c.token)
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 

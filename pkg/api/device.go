@@ -12,7 +12,6 @@ import (
 func (c *Client) GetDevices() ([]Device, error) {
 	loggedIn, err := c.IsLoggedIn()
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 	if !loggedIn {
@@ -24,24 +23,21 @@ func (c *Client) GetDevices() ([]Device, error) {
 		}
 	}
 
-	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/devices", c.Config.String("host"), c.omadaCID, c.Config.String("site"))
+	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/devices", c.Config.String("host"), c.omadaCID, c.siteId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 
 	setHeaders(req, c.token)
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 
