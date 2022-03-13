@@ -43,7 +43,7 @@ func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]Netwo
 		return nil, err
 	}
 	if !loggedIn {
-		log.Info(fmt.Sprintf("Not logged in, logging in with user: %s...", c.Config.String("username")))
+		log.Info(fmt.Sprintf("not logged in, logging in with user: %s", c.Config.String("username")))
 		err := c.Login()
 		if err != nil || c.token == "" {
 			log.Error(fmt.Sprintf("Failed to login: %s", err))
