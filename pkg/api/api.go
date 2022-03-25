@@ -15,6 +15,7 @@ type Client struct {
 	httpClient *http.Client
 	token      string
 	omadaCID   string
+	siteId     string
 }
 
 func setuphttpClient(insecure bool) (*http.Client, error) {
@@ -50,6 +51,13 @@ func Configure(c *cli.Context) (*Client, error) {
 		return nil, err
 	}
 	client.omadaCID = cid
+
+	sid, err := client.getSiteId(c.String("site"))
+	if err != nil {
+		return nil, err
+	}
+	client.siteId = *sid
+
 	return client, nil
 }
 

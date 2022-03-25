@@ -7,8 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (c *Client) IsLoggedIn() (bool, error) {
@@ -81,20 +79,17 @@ func (c *Client) Login() error {
 	setHeaders(req, "")
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 
 	err = json.Unmarshal(body, &logindata)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 
