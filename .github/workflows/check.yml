@@ -22,6 +22,11 @@ jobs:
     - name: Lint with golangci-lint
       uses: golangci/golangci-lint-action@v2
 
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
     - name: Run GoReleaser check
       uses: goreleaser/goreleaser-action@v2.8.1
       with:
