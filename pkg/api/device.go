@@ -23,7 +23,7 @@ func (c *Client) GetDevices() ([]Device, error) {
 		}
 	}
 
-	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/devices", c.Config.String("host"), c.omadaCID, c.siteId)
+	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/devices", c.Config.String("host"), c.omadaCID, c.SiteId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
