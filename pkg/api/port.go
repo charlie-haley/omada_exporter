@@ -23,7 +23,7 @@ func (c *Client) GetPorts(switchMac string) ([]Port, error) {
 		}
 	}
 
-	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/switches/%s/ports", c.Config.String("host"), c.omadaCID, c.siteId, switchMac)
+	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/switches/%s/ports", c.Config.String("host"), c.omadaCID, c.SiteId, switchMac)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err

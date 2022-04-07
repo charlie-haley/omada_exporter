@@ -48,7 +48,7 @@ func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]Netwo
 		}
 	}
 
-	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/clients", c.Config.String("host"), c.omadaCID, c.siteId)
+	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/clients", c.Config.String("host"), c.omadaCID, c.SiteId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
