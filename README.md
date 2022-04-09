@@ -30,6 +30,8 @@ docker run -d \
     chhaley/omada_exporter
 ```
 
+__There's also a GHCR mirror available if you'd prefer to not use Docker Hub. `ghcr.io/charlie-haley/omada_exporter`__
+
 ### ☸️ Helm
 ```bash
 helm repo add charlie-haley http://charts.charliehaley.dev
