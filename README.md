@@ -8,7 +8,7 @@
 
 ### 📈 Dashboard
 
-There's a [default dashboard in this repo](./dashboard.json), which would be a good starting point for visualising your metrics.
+There's a [default dashboard in this repo](./dashboard.json), which would be a good starting point for visualising your metrics. [The dashboard is also available on Grafana.com.](https://grafana.com/grafana/dashboards/16343)
 
 <p align="center" style="text-align: center">
     <img src="./docs/images/dashboard-dark-mode.png#gh-dark-mode-only" width="70%"><br/>
