@@ -801,7 +801,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": false,
-          "expr": "omada_device_cpu_percentage{device=\"$Device\", site=\"$Site\"}",
+          "expr": "omada_device_cpu_percentage{mac=\"$Device\", site=\"$Site\"}",
           "instant": false,
           "interval": "",
           "legendFormat": "{{device_type}} - {{ ip }}",
@@ -894,7 +894,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": false,
-          "expr": "omada_device_mem_percentage{device=\"$Device\", site=\"$Site\"}",
+          "expr": "omada_device_mem_percentage{mac=\"$Device\", site=\"$Site\"}",
           "instant": false,
           "interval": "",
           "legendFormat": "{{device_type}} - {{ ip }}",
@@ -920,7 +920,7 @@
                 "0": {
                   "color": "gray",
                   "index": 0,
-                  "text": "Disabled"
+                  "text": "Not connected"
                 }
               },
               "type": "value"
@@ -982,7 +982,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": false,
-          "expr": "omada_port_link_speed_mbps{switch_mac=\"$Device\", vlan_id=\"\", site=\"$Site\"}",
+          "expr": "omada_port_link_speed_mbps{switch_mac=\"$Device\", site=\"$Site\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "{{switch_port}}",
