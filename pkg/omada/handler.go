@@ -71,7 +71,7 @@ func setDeviceMetrics(devices []api.Device, site string, siteId string) {
 func setPortMetricsByDevice(c *api.Client, device api.Device, site string, siteId string) error {
 	for _, p := range device.Ports {
 		linkSpeed := float64(0)
-		if p.PortStatus.LinkSpeed == 0 {
+		if p.PortStatus.LinkStatus == 0 || p.PortStatus.LinkSpeed == 0 {
 			linkSpeed = 0
 		}
 		if p.PortStatus.LinkSpeed == 1 {
