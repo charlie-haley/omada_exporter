@@ -18,7 +18,7 @@ type Client struct {
 	SiteId     string
 }
 
-func setuphttpClient(insecure bool) (*http.Client, error) {
+func setuphttpClient(insecure bool, timeout int) (*http.Client, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to init cookiejar")
@@ -28,7 +28,7 @@ func setuphttpClient(insecure bool) (*http.Client, error) {
 	t.MaxConnsPerHost = 100
 	t.MaxIdleConnsPerHost = 100
 
-	client := &http.Client{Transport: t, Timeout: time.Duration(10) * time.Second, Jar: jar}
+	client := &http.Client{Transport: t, Timeout: time.Duration(timeout) * time.Second, Jar: jar}
 
 	if insecure {
 		t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
@@ -38,7 +38,7 @@ func setuphttpClient(insecure bool) (*http.Client, error) {
 }
 
 func Configure(c *cli.Context) (*Client, error) {
-	httpClient, err := setuphttpClient(c.Bool("insecure"))
+	httpClient, err := setuphttpClient(c.Bool("insecure"), c.Int("timeout"))
 	if err != nil {
 		return nil, err
 	}
