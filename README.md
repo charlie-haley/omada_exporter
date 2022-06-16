@@ -76,8 +76,8 @@ GLOBAL OPTIONS:
    --interval value             Interval between scrapes, in seconds. (default: 5) [$OMADA_SCRAPE_INTERVAL]
    --timeout value              Timeout when making requests to the Omada Controller. (default: 15) [$OMADA_REQUEST_TIMEOUT]
    --insecure                   Whether to skip verifying the SSL certificate on the controller. (default: false) [$OMADA_INSECURE]
-   --disable-go-collector       Disable Go collector metrics. (default: false) [$OMADA_DISABLE_GO_COLLECTOR]
-   --disable-process-collector  Disable process collector metrics. (default: false) [$OMADA_DISABLE_PROCESS_COLLECTOR]
+   --disable-go-collector       Disable Go collector metrics. (default: true) [$OMADA_DISABLE_GO_COLLECTOR]
+   --disable-process-collector  Disable process collector metrics. (default: true) [$OMADA_DISABLE_PROCESS_COLLECTOR]
    --help, -h                   show help (default: false)
    --version, -v                print the version (default: false)
 ```
@@ -95,8 +95,8 @@ OMADA_PORT               | Port on which to expose the Prometheus metrics. (defa
 OMADA_INSECURE           | Whether to skip verifying the SSL certificate on the controller. (default: false)
 OMADA_SCRAPE_INTERVAL    | Interval between scrapes, in seconds. (default: 5)
 OMADA_REQUEST_TIMEOUT    | Timeout when making requests to the Omada Controller. (default: 15)
-OMADA_DISABLE_GO_COLLECTOR | Disable Go collector metrics.
-OMADA_DISABLE_PROCESS_COLLECTOR | Disable process collector metrics.
+OMADA_DISABLE_GO_COLLECTOR | Disable Go collector metrics. (default: true)
+OMADA_DISABLE_PROCESS_COLLECTOR | Disable process collector metrics. (default: true)
 
 ### Helm
 ```
