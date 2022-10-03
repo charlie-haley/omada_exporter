@@ -23,6 +23,7 @@ var (
 	port                     string
 	site                     string
 	interval                 int
+	timeout                  int
 	insecure                 bool
 	goCollectorDisabled      bool
 	processCollectorDisabled bool
@@ -44,9 +45,10 @@ func Run() {
 		&cli.StringFlag{Destination: &port, Name: "port", Value: "9202", Usage: "Port on which to expose the Prometheus metrics.", EnvVars: []string{"OMADA_PORT"}},
 		&cli.StringFlag{Destination: &site, Name: "site", Value: "Default", Usage: "Omada site to scrape metrics from.", EnvVars: []string{"OMADA_SITE"}},
 		&cli.IntFlag{Destination: &interval, Name: "interval", Value: 5, Usage: "Interval between scrapes, in seconds.", EnvVars: []string{"OMADA_SCRAPE_INTERVAL"}},
+		&cli.IntFlag{Destination: &timeout, Name: "timeout", Value: 15, Usage: "Timeout when making requests to the Omada Controller.", EnvVars: []string{"OMADA_REQUEST_TIMEOUT"}},
 		&cli.BoolFlag{Destination: &insecure, Name: "insecure", Value: false, Usage: "Whether to skip verifying the SSL certificate on the controller.", EnvVars: []string{"OMADA_INSECURE"}},
-		&cli.BoolFlag{Destination: &goCollectorDisabled, Name: "disable-go-collector", Value: false, Usage: "Disable Go collector metrics.", EnvVars: []string{"OMADA_DISABLE_GO_COLLECTOR"}},
-		&cli.BoolFlag{Destination: &processCollectorDisabled, Name: "disable-process-collector", Value: false, Usage: "Disable process collector metrics.", EnvVars: []string{"OMADA_DISABLE_PROCESS_COLLECTOR"}},
+		&cli.BoolFlag{Destination: &goCollectorDisabled, Name: "disable-go-collector", Value: true, Usage: "Disable Go collector metrics.", EnvVars: []string{"OMADA_DISABLE_GO_COLLECTOR"}},
+		&cli.BoolFlag{Destination: &processCollectorDisabled, Name: "disable-process-collector", Value: true, Usage: "Disable process collector metrics.", EnvVars: []string{"OMADA_DISABLE_PROCESS_COLLECTOR"}},
 	}
 	app.Commands = []*cli.Command{
 		{Name: "version", Aliases: []string{"v"}, Usage: "prints the current version.",
