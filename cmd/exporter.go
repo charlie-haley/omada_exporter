@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/charlie-haley/omada_exporter/pkg/api"
-	"github.com/charlie-haley/omada_exporter/pkg/omada"
+	"github.com/charlie-haley/omada_exporter/pkg/collector"
+	"github.com/charlie-haley/omada_exporter/pkg/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -16,18 +16,8 @@ import (
 )
 
 var version = "development"
-var (
-	host                     string
-	username                 string
-	password                 string
-	port                     string
-	site                     string
-	interval                 int
-	timeout                  int
-	insecure                 bool
-	goCollectorDisabled      bool
-	processCollectorDisabled bool
-)
+
+var conf = config.Config{}
 
 func Run() {
 	app := cli.NewApp()
@@ -39,16 +29,15 @@ func Run() {
 		{Name: "Charlie Haley", Email: "charlie-haley@users.noreply.github.com"},
 	}
 	app.Flags = []cli.Flag{
-		&cli.StringFlag{Destination: &host, Required: true, Name: "host", Value: "", Usage: "The hostname of the Omada Controller, including protocol.", EnvVars: []string{"OMADA_HOST"}},
-		&cli.StringFlag{Destination: &username, Required: true, Name: "username", Value: "", Usage: "Username of the Omada user you'd like to use to fetch metrics.", EnvVars: []string{"OMADA_USER"}},
-		&cli.StringFlag{Destination: &password, Required: true, Name: "password", Value: "", Usage: "Password for your Omada user.", EnvVars: []string{"OMADA_PASS"}},
-		&cli.StringFlag{Destination: &port, Name: "port", Value: "9202", Usage: "Port on which to expose the Prometheus metrics.", EnvVars: []string{"OMADA_PORT"}},
-		&cli.StringFlag{Destination: &site, Name: "site", Value: "Default", Usage: "Omada site to scrape metrics from.", EnvVars: []string{"OMADA_SITE"}},
-		&cli.IntFlag{Destination: &interval, Name: "interval", Value: 5, Usage: "Interval between scrapes, in seconds.", EnvVars: []string{"OMADA_SCRAPE_INTERVAL"}},
-		&cli.IntFlag{Destination: &timeout, Name: "timeout", Value: 15, Usage: "Timeout when making requests to the Omada Controller.", EnvVars: []string{"OMADA_REQUEST_TIMEOUT"}},
-		&cli.BoolFlag{Destination: &insecure, Name: "insecure", Value: false, Usage: "Whether to skip verifying the SSL certificate on the controller.", EnvVars: []string{"OMADA_INSECURE"}},
-		&cli.BoolFlag{Destination: &goCollectorDisabled, Name: "disable-go-collector", Value: true, Usage: "Disable Go collector metrics.", EnvVars: []string{"OMADA_DISABLE_GO_COLLECTOR"}},
-		&cli.BoolFlag{Destination: &processCollectorDisabled, Name: "disable-process-collector", Value: true, Usage: "Disable process collector metrics.", EnvVars: []string{"OMADA_DISABLE_PROCESS_COLLECTOR"}},
+		&cli.StringFlag{Destination: &conf.Host, Required: true, Name: "host", Value: "", Usage: "The hostname of the Omada Controller, including protocol.", EnvVars: []string{"OMADA_HOST"}},
+		&cli.StringFlag{Destination: &conf.Username, Required: true, Name: "username", Value: "", Usage: "Username of the Omada user you'd like to use to fetch metrics.", EnvVars: []string{"OMADA_USER"}},
+		&cli.StringFlag{Destination: &conf.Password, Required: true, Name: "password", Value: "", Usage: "Password for your Omada user.", EnvVars: []string{"OMADA_PASS"}},
+		&cli.StringFlag{Destination: &conf.Port, Name: "port", Value: "9202", Usage: "Port on which to expose the Prometheus metrics.", EnvVars: []string{"OMADA_PORT"}},
+		&cli.StringFlag{Destination: &conf.Site, Name: "site", Value: "Default", Usage: "Omada site to scrape metrics from.", EnvVars: []string{"OMADA_SITE"}},
+		&cli.IntFlag{Destination: &conf.Timeout, Name: "timeout", Value: 15, Usage: "Timeout when making requests to the Omada Controller.", EnvVars: []string{"OMADA_REQUEST_TIMEOUT"}},
+		&cli.BoolFlag{Destination: &conf.Insecure, Name: "insecure", Value: false, Usage: "Whether to skip verifying the SSL certificate on the controller.", EnvVars: []string{"OMADA_INSECURE"}},
+		&cli.BoolFlag{Destination: &conf.GoCollectorDisabled, Name: "disable-go-collector", Value: true, Usage: "Disable Go collector metrics.", EnvVars: []string{"OMADA_DISABLE_GO_COLLECTOR"}},
+		&cli.BoolFlag{Destination: &conf.ProcessCollectorDisabled, Name: "disable-process-collector", Value: true, Usage: "Disable process collector metrics.", EnvVars: []string{"OMADA_DISABLE_PROCESS_COLLECTOR"}},
 	}
 	app.Commands = []*cli.Command{
 		{Name: "version", Aliases: []string{"v"}, Usage: "prints the current version.",
@@ -68,29 +57,34 @@ func Run() {
 }
 
 func run(c *cli.Context) error {
-	if goCollectorDisabled {
+	if conf.GoCollectorDisabled {
 		// remove Go collector
 		prometheus.Unregister(prometheus.NewGoCollector())
 	}
-	if processCollectorDisabled {
+
+	if conf.ProcessCollectorDisabled {
 		// remove Process collector
 		prometheus.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 	}
 
 	// check if host is properly formatted
-	if strings.HasSuffix(host, "/") {
+	if strings.HasSuffix(conf.Host, "/") {
 		// remove trailing slash if it exists
-		host = strings.TrimRight(host, "/")
+		conf.Host = strings.TrimRight(conf.Host, "/")
 	}
 
-	client, err := api.Configure(c)
+	client, err := api.Configure(&conf)
 	if err != nil {
 		return err
 	}
 
-	go handleScrape(client)
+	// register omada collectors
+	prometheus.MustRegister(collector.NewClientCollector(client))
+	prometheus.MustRegister(collector.NewControllerCollector(client))
+	prometheus.MustRegister(collector.NewDeviceCollector(client))
+	prometheus.MustRegister(collector.NewPortCollector(client))
 
-	log.Info(fmt.Sprintf("listening on :%s", port))
+	log.Info(fmt.Sprintf("listening on :%s", conf.Port))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`<html>
     <head>
@@ -106,30 +100,10 @@ func run(c *cli.Context) error {
 	})
 
 	http.Handle("/metrics", promhttp.Handler())
-	err = http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
+	err = http.ListenAndServe(fmt.Sprintf(":%s", conf.Port), nil)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func handleScrape(config *api.Client) {
-	// ensure we scrape before the interval
-	err := omada.Scrape(config)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-
-	ticker := time.NewTicker(time.Duration(interval) * time.Second)
-	defer ticker.Stop()
-	//nolint:gosimple
-	for {
-		select {
-		case <-ticker.C:
-			//nolint:errcheck
-			go omada.Scrape(config)
-		}
-	}
 }

@@ -12,7 +12,7 @@ import (
 func (c *Client) IsLoggedIn() (bool, error) {
 	loginstatus := loginStatus{}
 
-	url := fmt.Sprintf("%s/%s/api/v2/loginStatus", c.Config.String("host"), c.omadaCID)
+	url := fmt.Sprintf("%s/%s/api/v2/loginStatus", c.Config.Host, c.omadaCID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return false, err
@@ -45,7 +45,7 @@ func (c *Client) IsLoggedIn() (bool, error) {
 // one of the "quirks" of the omada API - it requires a CID to be part of the path
 // fetching this from the path after redirect seems like the best way
 func (c *Client) getCid() (string, error) {
-	host := c.Config.String("host")
+	host := c.Config.Host
 	req, err := http.NewRequest("GET", host, nil)
 	if err != nil {
 		return "", err
@@ -69,8 +69,8 @@ func (c *Client) getCid() (string, error) {
 func (c *Client) Login() error {
 	logindata := loginResponse{}
 
-	url := fmt.Sprintf("%s/%s/api/v2/login", c.Config.String("host"), c.omadaCID)
-	jsonStr := []byte(fmt.Sprintf(`{"username":"%s","password":"%s"}`, c.Config.String("username"), c.Config.String("password")))
+	url := fmt.Sprintf("%s/%s/api/v2/login", c.Config.Host, c.omadaCID)
+	jsonStr := []byte(fmt.Sprintf(`{"username":"%s","password":"%s"}`, c.Config.Username, c.Config.Password))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return err

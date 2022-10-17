@@ -17,14 +17,14 @@ func (c *Client) getSiteId(name string) (*string, error) {
 		return nil, err
 	}
 	if !loggedIn {
-		log.Info(fmt.Errorf("not logged in, logging in with user: %s", c.Config.String("username")))
+		log.Info(fmt.Errorf("not logged in, logging in with user: %s", c.Config.Username))
 		err := c.Login()
 		if err != nil || c.token == "" {
 			return nil, fmt.Errorf("failed to login: %s", err)
 		}
 	}
 
-	url := fmt.Sprintf("%s/%s/api/v2/users/current", c.Config.String("host"), c.omadaCID)
+	url := fmt.Sprintf("%s/%s/api/v2/users/current", c.Config.Host, c.omadaCID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
