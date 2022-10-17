@@ -7,11 +7,11 @@ import (
 	"net/http/cookiejar"
 	"time"
 
-	"github.com/urfave/cli/v2"
+	"github.com/charlie-haley/omada_exporter/pkg/config"
 )
 
 type Client struct {
-	Config     *cli.Context
+	Config     *config.Config
 	httpClient *http.Client
 	token      string
 	omadaCID   string
@@ -37,11 +37,12 @@ func setuphttpClient(insecure bool, timeout int) (*http.Client, error) {
 	return client, nil
 }
 
-func Configure(c *cli.Context) (*Client, error) {
-	httpClient, err := setuphttpClient(c.Bool("insecure"), c.Int("timeout"))
+func Configure(c *config.Config) (*Client, error) {
+	httpClient, err := setuphttpClient(c.Insecure, c.Timeout)
 	if err != nil {
 		return nil, err
 	}
+
 	client := &Client{
 		Config:     c,
 		httpClient: httpClient,
@@ -52,7 +53,7 @@ func Configure(c *cli.Context) (*Client, error) {
 	}
 	client.omadaCID = cid
 
-	sid, err := client.getSiteId(c.String("site"))
+	sid, err := client.getSiteId(c.Site)
 	if err != nil {
 		return nil, err
 	}

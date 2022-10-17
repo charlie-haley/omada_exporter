@@ -73,7 +73,6 @@ GLOBAL OPTIONS:
    --password value             Password for your Omada user. [$OMADA_PASS]
    --port value                 Port on which to expose the Prometheus metrics. (default: "9202") [$OMADA_PORT]
    --site value                 Omada site to scrape metrics from. (default: "Default") [$OMADA_SITE]
-   --interval value             Interval between scrapes, in seconds. (default: 5) [$OMADA_SCRAPE_INTERVAL]
    --timeout value              Timeout when making requests to the Omada Controller. (default: 15) [$OMADA_REQUEST_TIMEOUT]
    --insecure                   Whether to skip verifying the SSL certificate on the controller. (default: false) [$OMADA_INSECURE]
    --disable-go-collector       Disable Go collector metrics. (default: true) [$OMADA_DISABLE_GO_COLLECTOR]
@@ -93,7 +92,6 @@ OMADA_PASS               | Password for your Omada user.
 OMADA_SITE               | Site you'd like to get metrics from. (default: "Default")
 OMADA_PORT               | Port on which to expose the Prometheus metrics. (default: 9202)
 OMADA_INSECURE           | Whether to skip verifying the SSL certificate on the controller. (default: false)
-OMADA_SCRAPE_INTERVAL    | Interval between scrapes, in seconds. (default: 5)
 OMADA_REQUEST_TIMEOUT    | Timeout when making requests to the Omada Controller. (default: 15)
 OMADA_DISABLE_GO_COLLECTOR | Disable Go collector metrics. (default: true)
 OMADA_DISABLE_PROCESS_COLLECTOR | Disable process collector metrics. (default: true)
@@ -107,7 +105,6 @@ omada:
     password: "mypassword"     # Password for your Omada user.
     site: "Default"            # Site you'd like to get metrics from. (default: "Default")
     insecure: false            # Whether to skip verifying the SSL certificate on the controller. (default: false)
-    scrape_interval: 5         # Interval between scrapes, in seconds. (default: 5)
 ```
 
 ## 📊 Metrics

@@ -15,7 +15,7 @@ func (c *Client) GetPorts(switchMac string) ([]Port, error) {
 		return nil, err
 	}
 	if !loggedIn {
-		log.Info(fmt.Errorf("not logged in, logging in with user: %s", c.Config.String("username")))
+		log.Info(fmt.Errorf("not logged in, logging in with user: %s", c.Config.Username))
 		err := c.Login()
 		if err != nil || c.token == "" {
 			log.Error(fmt.Errorf("failed to login: %s", err))
@@ -23,7 +23,7 @@ func (c *Client) GetPorts(switchMac string) ([]Port, error) {
 		}
 	}
 
-	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/switches/%s/ports", c.Config.String("host"), c.omadaCID, c.SiteId, switchMac)
+	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/switches/%s/ports", c.Config.Host, c.omadaCID, c.SiteId, switchMac)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
