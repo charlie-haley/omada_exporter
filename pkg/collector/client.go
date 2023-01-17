@@ -29,6 +29,7 @@ func (c *clientCollector) Collect(ch chan<- prometheus.Metric) {
 	clients, err := client.GetClients()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get clients")
+		return
 	}
 
 	ch <- prometheus.MustNewConstMetric(c.omadaClientConnectedTotal, prometheus.GaugeValue, float64(len(clients)),
