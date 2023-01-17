@@ -36,6 +36,7 @@ func (c *deviceCollector) Collect(ch chan<- prometheus.Metric) {
 	devices, err := client.GetDevices()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get devices")
+		return
 	}
 
 	for _, item := range devices {

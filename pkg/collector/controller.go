@@ -27,6 +27,7 @@ func (c *controllerCollector) Collect(ch chan<- prometheus.Metric) {
 	controller, err := client.GetController()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get controller")
+		return
 	}
 
 	ch <- prometheus.MustNewConstMetric(c.omadaControllerUptimeSeconds, prometheus.GaugeValue, controller.Uptime/1000,
