@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	log "github.com/rs/zerolog/log"
 )
 
 func (c *Client) GetDevices() ([]Device, error) {
@@ -15,10 +15,10 @@ func (c *Client) GetDevices() ([]Device, error) {
 		return nil, err
 	}
 	if !loggedIn {
-		log.Info(fmt.Errorf("not logged in, logging in with user: %s", c.Config.Username))
+		log.Info().Msg(fmt.Sprintf("not logged in, logging in with user: %s", c.Config.Username))
 		err := c.Login()
 		if err != nil || c.token == "" {
-			log.Error(fmt.Errorf("failed to login: %s", err))
+			log.Error().Err(err).Msg("failed to login")
 			return nil, err
 		}
 	}
@@ -40,6 +40,7 @@ func (c *Client) GetDevices() ([]Device, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Debug().Bytes("data", body).Msg("Received data from devices endpoint")
 
 	devicedata := deviceResponse{}
 	err = json.Unmarshal(body, &devicedata)

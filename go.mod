@@ -5,7 +5,6 @@ go 1.19
 require (
 	github.com/prometheus/client_golang v1.9.0
 	github.com/rs/zerolog v1.28.0
-	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli/v2 v2.3.0
 )
 
@@ -22,7 +21,6 @@ require (
 	github.com/prometheus/procfs v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect
 )

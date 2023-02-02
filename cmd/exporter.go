@@ -11,7 +11,8 @@ import (
 	"github.com/charlie-haley/omada_exporter/pkg/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	zerolog "github.com/rs/zerolog"
+	log "github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v2"
 )
 
@@ -34,6 +35,7 @@ func Run() {
 		&cli.StringFlag{Destination: &conf.Password, Required: true, Name: "password", Value: "", Usage: "Password for your Omada user.", EnvVars: []string{"OMADA_PASS"}},
 		&cli.StringFlag{Destination: &conf.Port, Name: "port", Value: "9202", Usage: "Port on which to expose the Prometheus metrics.", EnvVars: []string{"OMADA_PORT"}},
 		&cli.StringFlag{Destination: &conf.Site, Name: "site", Value: "Default", Usage: "Omada site to scrape metrics from.", EnvVars: []string{"OMADA_SITE"}},
+		&cli.StringFlag{Destination: &conf.LogLevel, Name: "log-level", Value: "error", Usage: "Application log level.", EnvVars: []string{"LOG_LEVEL"}},
 		&cli.IntFlag{Destination: &conf.Timeout, Name: "timeout", Value: 15, Usage: "Timeout when making requests to the Omada Controller.", EnvVars: []string{"OMADA_REQUEST_TIMEOUT"}},
 		&cli.BoolFlag{Destination: &conf.Insecure, Name: "insecure", Value: false, Usage: "Whether to skip verifying the SSL certificate on the controller.", EnvVars: []string{"OMADA_INSECURE"}},
 		&cli.BoolFlag{Destination: &conf.GoCollectorDisabled, Name: "disable-go-collector", Value: true, Usage: "Disable Go collector metrics.", EnvVars: []string{"OMADA_DISABLE_GO_COLLECTOR"}},
@@ -51,12 +53,19 @@ func Run() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("App failed to run")
 		os.Exit(1)
 	}
 }
 
 func run(c *cli.Context) error {
+	// set log level
+	level, err := zerolog.ParseLevel(conf.LogLevel)
+	if err != nil {
+		return err
+	}
+	zerolog.SetGlobalLevel(level)
+
 	if conf.GoCollectorDisabled {
 		// remove Go collector
 		prometheus.Unregister(prometheus.NewGoCollector())
@@ -84,7 +93,7 @@ func run(c *cli.Context) error {
 	prometheus.MustRegister(collector.NewDeviceCollector(client))
 	prometheus.MustRegister(collector.NewPortCollector(client))
 
-	log.Info(fmt.Sprintf("listening on :%s", conf.Port))
+	log.Info().Msg(fmt.Sprintf("listening on :%s", conf.Port))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`<html>
     <head>
