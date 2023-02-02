@@ -6,6 +6,7 @@ type Config struct {
 	Password                 string
 	Port                     string
 	Site                     string
+	LogLevel                 string
 	Timeout                  int
 	Insecure                 bool
 	GoCollectorDisabled      bool

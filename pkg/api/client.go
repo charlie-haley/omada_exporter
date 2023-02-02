@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	log "github.com/rs/zerolog/log"
 )
 
 // gets clients by switch mac address
@@ -40,10 +40,10 @@ func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]Netwo
 		return nil, err
 	}
 	if !loggedIn {
-		log.Info(fmt.Sprintf("not logged in, logging in with user: %s", c.Config.Username))
+		log.Info().Msg(fmt.Sprintf("not logged in, logging in with user: %s", c.Config.Username))
 		err := c.Login()
 		if err != nil || c.token == "" {
-			log.Error(fmt.Sprintf("Failed to login: %s", err))
+			log.Error().Err(err).Msg("Failed to login")
 			return nil, err
 		}
 	}
@@ -75,6 +75,7 @@ func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]Netwo
 	if err != nil {
 		return nil, err
 	}
+	log.Debug().Bytes("data", body).Msg("Received data from clients endpoint")
 
 	clientdata := clientResponse{}
 	err = json.Unmarshal(body, &clientdata)

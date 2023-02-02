@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	log "github.com/rs/zerolog/log"
 )
 
 // there's no nice way of fetching the site ID from the `Viewer` role
@@ -17,7 +17,7 @@ func (c *Client) getSiteId(name string) (*string, error) {
 		return nil, err
 	}
 	if !loggedIn {
-		log.Info(fmt.Errorf("not logged in, logging in with user: %s", c.Config.Username))
+		log.Info().Msg(fmt.Sprintf("not logged in, logging in with user: %s", c.Config.Username))
 		err := c.Login()
 		if err != nil || c.token == "" {
 			return nil, fmt.Errorf("failed to login: %s", err)
