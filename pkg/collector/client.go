@@ -43,7 +43,7 @@ func (c *clientCollector) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(c.omadaClientDownloadActivityBytes, prometheus.GaugeValue, item.Activity,
 				item.HostName, item.Vendor, "", "", item.Ip, item.Mac, site, client.SiteId, item.ApName, item.Ssid, wifiMode)
 
-			ch <- prometheus.MustNewConstMetric(c.omadaClientSignalDbm, prometheus.GaugeValue, item.SignalLevel,
+			ch <- prometheus.MustNewConstMetric(c.omadaClientSignalDbm, prometheus.GaugeValue, -item.SignalLevel,
 				item.HostName, item.Vendor, item.Ip, item.Mac, item.ApName, site, client.SiteId, item.Ssid, wifiMode)
 		}
 		if !item.Wireless {
