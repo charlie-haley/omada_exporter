@@ -12,6 +12,8 @@ type portCollector struct {
 	omadaPortPowerWatts    *prometheus.Desc
 	omadaPortLinkStatus    *prometheus.Desc
 	omadaPortLinkSpeedMbps *prometheus.Desc
+	omadaPortLinkRx        *prometheus.Desc
+	omadaPortLinkTx        *prometheus.Desc
 	client                 *api.Client
 }
 
@@ -19,6 +21,8 @@ func (c *portCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.omadaPortPowerWatts
 	ch <- c.omadaPortLinkStatus
 	ch <- c.omadaPortLinkSpeedMbps
+	ch <- c.omadaPortLinkRx
+	ch <- c.omadaPortLinkTx
 }
 
 func (c *portCollector) Collect(ch chan<- prometheus.Metric) {
@@ -57,6 +61,12 @@ func (c *portCollector) Collect(ch chan<- prometheus.Metric) {
 
 				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkSpeedMbps, prometheus.GaugeValue, linkSpeed,
 					device.Name, device.Mac, portClient.HostName, portClient.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site, client.SiteId)
+
+				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkRx, prometheus.CounterValue, p.PortStatus.Rx,
+					device.Name, device.Mac, portClient.HostName, portClient.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site, client.SiteId)
+
+				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkTx, prometheus.CounterValue, p.PortStatus.Tx,
+					device.Name, device.Mac, portClient.HostName, portClient.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site, client.SiteId)
 			} else {
 				ch <- prometheus.MustNewConstMetric(c.omadaPortPowerWatts, prometheus.GaugeValue, p.PortStatus.PoePower,
 					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
@@ -65,6 +75,12 @@ func (c *portCollector) Collect(ch chan<- prometheus.Metric) {
 					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
 
 				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkSpeedMbps, prometheus.GaugeValue, linkSpeed,
+					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
+
+				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkRx, prometheus.CounterValue, p.PortStatus.Rx,
+					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
+
+				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkTx, prometheus.CounterValue, p.PortStatus.Tx,
 					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
 			}
 		}
@@ -116,6 +132,16 @@ func NewPortCollector(c *api.Client) *portCollector {
 		),
 		omadaPortLinkSpeedMbps: prometheus.NewDesc("omada_port_link_speed_mbps",
 			"Port link speed in mbps. This is the capability of the connection, not the active throughput.",
+			[]string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"},
+			nil,
+		),
+		omadaPortLinkRx: prometheus.NewDesc("omada_port_link_rx",
+			"Bytes recieved on a port.",
+			[]string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"},
+			nil,
+		),
+		omadaPortLinkTx: prometheus.NewDesc("omada_port_link_tx",
+			"Bytes transmitted on a port.",
 			[]string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"},
 			nil,
 		),

@@ -37,7 +37,7 @@ __There's also a GHCR mirror available if you'd prefer to not use Docker Hub. `g
 helm repo add charlie-haley http://charts.charliehaley.dev
 helm repo update
 helm install omada-exporter charlie-haley/omada-exporter \
-    --set omada.host=https://192.1.1.20 \ 
+    --set omada.host=https://192.1.1.20 \
     --set omada.username=exporter \
     --set omada.password=mypassword \
     --set omada.site=Default \
@@ -124,6 +124,8 @@ Name|Description|Labels
  omada_port_power_watts |  The current PoE usage of the port in watts. | device, device_mac, client, vendor, switch_port, switch_mac, switch_id, vlan_id, profile, site, site_id
  omada_port_link_status |  A boolean representing the link status of the port. | device, device_mac, client, vendor, switch_port, switch_mac, switch_id, vlan_id, profile, site, site_id
  omada_port_link_speed_mbps |  Port link speed in mbps. This is the capability of the connection, not the active throughput. | device, device_mac, client, vendor, switch_port, switch_mac, switch_id, vlan_id, profile, site, site_id
+ omada_port_link_rx |  Bytes recieved on a port. | device, device_mac, client, vendor, switch_port, switch_mac, switch_id, vlan_id, profile, site, site_id
+ omada_port_link_tx |  Bytes transmitted on a port. | device, device_mac, client, vendor, switch_port, switch_mac, switch_id, vlan_id, profile, site, site_id
  omada_controller_uptime_seconds |  Uptime of the controller. | controller_name, model, controller_version, firmware_version, mac
  omada_controller_storage_used_bytes |  Storage used on the controller. | storage_name, controller_name, model, controller_version, firmware_version, mac
  omada_controller_storage_available_bytes |  Total storage available for the controller. | storage_name, controller_name, model, controller_version, firmware_version, mac
