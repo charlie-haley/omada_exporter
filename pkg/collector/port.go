@@ -42,6 +42,7 @@ func (c *portCollector) Collect(ch chan<- prometheus.Metric) {
 		// duplicate ports to prevent this error.
 		ports := removeDuplicates(device.Ports)
 		for _, p := range ports {
+			var cHostName, cVendor, cVlanID string
 			linkSpeed := getPortByLinkSpeed(p.PortStatus.LinkSpeed)
 
 			portClient, err := client.GetClientByPort(device.Mac, p.Port)
@@ -51,38 +52,18 @@ func (c *portCollector) Collect(ch chan<- prometheus.Metric) {
 
 			port := fmt.Sprintf("%.0f", p.Port)
 			if portClient != nil {
-				vlanId := fmt.Sprintf("%.0f", portClient.VlanId)
-
-				ch <- prometheus.MustNewConstMetric(c.omadaPortPowerWatts, prometheus.GaugeValue, p.PortStatus.PoePower,
-					device.Name, device.Mac, portClient.HostName, portClient.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site, client.SiteId)
-
-				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkStatus, prometheus.GaugeValue, p.PortStatus.LinkStatus,
-					device.Name, device.Mac, portClient.HostName, portClient.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site, client.SiteId)
-
-				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkSpeedMbps, prometheus.GaugeValue, linkSpeed,
-					device.Name, device.Mac, portClient.HostName, portClient.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site, client.SiteId)
-
-				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkRx, prometheus.CounterValue, p.PortStatus.Rx,
-					device.Name, device.Mac, portClient.HostName, portClient.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site, client.SiteId)
-
-				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkTx, prometheus.CounterValue, p.PortStatus.Tx,
-					device.Name, device.Mac, portClient.HostName, portClient.Vendor, port, p.SwitchMac, p.SwitchId, vlanId, p.ProfileName, site, client.SiteId)
-			} else {
-				ch <- prometheus.MustNewConstMetric(c.omadaPortPowerWatts, prometheus.GaugeValue, p.PortStatus.PoePower,
-					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
-
-				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkStatus, prometheus.GaugeValue, p.PortStatus.LinkStatus,
-					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
-
-				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkSpeedMbps, prometheus.GaugeValue, linkSpeed,
-					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
-
-				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkRx, prometheus.CounterValue, p.PortStatus.Rx,
-					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
-
-				ch <- prometheus.MustNewConstMetric(c.omadaPortLinkTx, prometheus.CounterValue, p.PortStatus.Tx,
-					device.Name, device.Mac, "", "", port, p.SwitchMac, p.SwitchId, "", p.ProfileName, site, client.SiteId)
+				cHostName = portClient.HostName
+				cVendor = portClient.Vendor
+				cVlanID = fmt.Sprintf("%.0f", portClient.VlanId)
 			}
+
+			labels := []string{device.Name, device.Mac, cHostName, cVendor, port, p.SwitchMac, p.SwitchId, cVlanID, p.ProfileName, site, client.SiteId}
+
+			ch <- prometheus.MustNewConstMetric(c.omadaPortPowerWatts, prometheus.GaugeValue, p.PortStatus.PoePower, labels...)
+			ch <- prometheus.MustNewConstMetric(c.omadaPortLinkStatus, prometheus.GaugeValue, p.PortStatus.LinkStatus, labels...)
+			ch <- prometheus.MustNewConstMetric(c.omadaPortLinkSpeedMbps, prometheus.GaugeValue, linkSpeed, labels...)
+			ch <- prometheus.MustNewConstMetric(c.omadaPortLinkRx, prometheus.CounterValue, p.PortStatus.Rx, labels...)
+			ch <- prometheus.MustNewConstMetric(c.omadaPortLinkTx, prometheus.CounterValue, p.PortStatus.Tx, labels...)
 		}
 	}
 }
@@ -119,30 +100,32 @@ func removeDuplicates(s []api.Port) []api.Port {
 }
 
 func NewPortCollector(c *api.Client) *portCollector {
+	labels := []string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"}
+
 	return &portCollector{
 		omadaPortPowerWatts: prometheus.NewDesc("omada_port_power_watts",
 			"The current PoE usage of the port in watts.",
-			[]string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"},
+			labels,
 			nil,
 		),
 		omadaPortLinkStatus: prometheus.NewDesc("omada_port_link_status",
 			"A boolean representing the link status of the port.",
-			[]string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"},
+			labels,
 			nil,
 		),
 		omadaPortLinkSpeedMbps: prometheus.NewDesc("omada_port_link_speed_mbps",
 			"Port link speed in mbps. This is the capability of the connection, not the active throughput.",
-			[]string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"},
+			labels,
 			nil,
 		),
 		omadaPortLinkRx: prometheus.NewDesc("omada_port_link_rx",
 			"Bytes recieved on a port.",
-			[]string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"},
+			labels,
 			nil,
 		),
 		omadaPortLinkTx: prometheus.NewDesc("omada_port_link_tx",
 			"Bytes transmitted on a port.",
-			[]string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"},
+			labels,
 			nil,
 		),
 		client: c,
