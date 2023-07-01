@@ -57,7 +57,7 @@ func (c *portCollector) Collect(ch chan<- prometheus.Metric) {
 				cVlanID = fmt.Sprintf("%.0f", portClient.VlanId)
 			}
 
-			labels := []string{device.Name, device.Mac, cHostName, cVendor, port, p.SwitchMac, p.SwitchId, cVlanID, p.ProfileName, site, client.SiteId}
+			labels := []string{device.Name, device.Mac, cHostName, cVendor, port, p.Name, p.SwitchMac, p.SwitchId, cVlanID, p.ProfileName, site, client.SiteId}
 
 			ch <- prometheus.MustNewConstMetric(c.omadaPortPowerWatts, prometheus.GaugeValue, p.PortStatus.PoePower, labels...)
 			ch <- prometheus.MustNewConstMetric(c.omadaPortLinkStatus, prometheus.GaugeValue, p.PortStatus.LinkStatus, labels...)
@@ -100,7 +100,7 @@ func removeDuplicates(s []api.Port) []api.Port {
 }
 
 func NewPortCollector(c *api.Client) *portCollector {
-	labels := []string{"device", "device_mac", "client", "vendor", "switch_port", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"}
+	labels := []string{"device", "device_mac", "client", "vendor", "switch_port", "name", "switch_mac", "switch_id", "vlan_id", "profile", "site", "site_id"}
 
 	return &portCollector{
 		omadaPortPowerWatts: prometheus.NewDesc("omada_port_power_watts",
