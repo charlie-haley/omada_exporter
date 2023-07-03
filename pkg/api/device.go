@@ -45,16 +45,13 @@ func (c *Client) GetDevices() ([]Device, error) {
 	devicedata := deviceResponse{}
 	err = json.Unmarshal(body, &devicedata)
 
-	var ports []Port
 	for i, d := range devicedata.Result {
 		if d.Type == "switch" {
 			switchPorts, err := c.GetPorts(d.Mac)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get ports: %s", err)
 			}
-			ports = append(ports, switchPorts...)
-			device := &devicedata.Result[i]
-			device.Ports = ports
+			devicedata.Result[i].Ports = switchPorts
 		}
 	}
 
