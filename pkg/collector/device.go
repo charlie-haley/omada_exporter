@@ -44,67 +44,59 @@ func (c *deviceCollector) Collect(ch chan<- prometheus.Metric) {
 		if item.NeedUpgrade {
 			needUpgrade = 1
 		}
-		ch <- prometheus.MustNewConstMetric(c.omadaDeviceUptimeSeconds, prometheus.GaugeValue, item.Uptime,
-			item.Name, item.Model, item.Version, item.Ip, item.Mac, site, client.SiteId, item.Type)
+		labels := []string{item.Name, item.Model, item.Version, item.Ip, item.Mac, site, client.SiteId, item.Type}
 
-		ch <- prometheus.MustNewConstMetric(c.omadaDeviceCpuPercentage, prometheus.GaugeValue, item.CpuUtil,
-			item.Name, item.Model, item.Version, item.Ip, item.Mac, site, client.SiteId, item.Type)
-
-		ch <- prometheus.MustNewConstMetric(c.omadaDeviceMemPercentage, prometheus.GaugeValue, item.MemUtil,
-			item.Name, item.Model, item.Version, item.Ip, item.Mac, site, client.SiteId, item.Type)
-
-		ch <- prometheus.MustNewConstMetric(c.omadaDeviceNeedUpgrade, prometheus.GaugeValue, needUpgrade,
-			item.Name, item.Model, item.Version, item.Ip, item.Mac, site, client.SiteId, item.Type)
-
+		ch <- prometheus.MustNewConstMetric(c.omadaDeviceUptimeSeconds, prometheus.GaugeValue, item.Uptime, labels...)
+		ch <- prometheus.MustNewConstMetric(c.omadaDeviceCpuPercentage, prometheus.GaugeValue, item.CpuUtil, labels...)
+		ch <- prometheus.MustNewConstMetric(c.omadaDeviceMemPercentage, prometheus.GaugeValue, item.MemUtil, labels...)
+		ch <- prometheus.MustNewConstMetric(c.omadaDeviceNeedUpgrade, prometheus.GaugeValue, needUpgrade, labels...)
 		if item.Type == "ap" {
-			ch <- prometheus.MustNewConstMetric(c.omadaDeviceTxRate, prometheus.GaugeValue, item.TxRate,
-				item.Name, item.Model, item.Version, item.Ip, item.Mac, site, client.SiteId, item.Type)
-
-			ch <- prometheus.MustNewConstMetric(c.omadaDeviceRxRate, prometheus.GaugeValue, item.RxRate,
-				item.Name, item.Model, item.Version, item.Ip, item.Mac, site, client.SiteId, item.Type)
+			ch <- prometheus.MustNewConstMetric(c.omadaDeviceTxRate, prometheus.CounterValue, item.TxRate, labels...)
+			ch <- prometheus.MustNewConstMetric(c.omadaDeviceRxRate, prometheus.CounterValue, item.RxRate, labels...)
 		}
 		if item.Type == "switch" {
-			ch <- prometheus.MustNewConstMetric(c.omadaDevicePoeRemainWatts, prometheus.GaugeValue, item.PoeRemain,
-				item.Name, item.Model, item.Version, item.Ip, item.Mac, site, client.SiteId, item.Type)
+			ch <- prometheus.MustNewConstMetric(c.omadaDevicePoeRemainWatts, prometheus.GaugeValue, item.PoeRemain, labels...)
 		}
 	}
 }
 
 func NewDeviceCollector(c *api.Client) *deviceCollector {
+	labels := []string{"device", "model", "version", "ip", "mac", "site", "site_id", "device_type"}
+
 	return &deviceCollector{
 		omadaDeviceUptimeSeconds: prometheus.NewDesc("omada_device_uptime_seconds",
 			"Uptime of the device.",
-			[]string{"device", "model", "version", "ip", "mac", "site", "site_id", "device_type"},
+			labels,
 			nil,
 		),
 		omadaDeviceCpuPercentage: prometheus.NewDesc("omada_device_cpu_percentage",
 			"Percentage of device CPU used.",
-			[]string{"device", "model", "version", "ip", "mac", "site", "site_id", "device_type"},
+			labels,
 			nil,
 		),
 		omadaDeviceMemPercentage: prometheus.NewDesc("omada_device_mem_percentage",
 			"Percentage of device Memory used.",
-			[]string{"device", "model", "version", "ip", "mac", "site", "site_id", "device_type"},
+			labels,
 			nil,
 		),
 		omadaDeviceNeedUpgrade: prometheus.NewDesc("omada_device_need_upgrade",
 			"A boolean on whether the device needs an upgrade.",
-			[]string{"device", "model", "version", "ip", "mac", "site", "site_id", "device_type"},
+			labels,
 			nil,
 		),
 		omadaDeviceTxRate: prometheus.NewDesc("omada_device_tx_rate",
 			"The tx rate of the device.",
-			[]string{"device", "model", "version", "ip", "mac", "site", "site_id", "device_type"},
+			labels,
 			nil,
 		),
 		omadaDeviceRxRate: prometheus.NewDesc("omada_device_rx_rate",
 			"The rx rate of the device.",
-			[]string{"device", "model", "version", "ip", "mac", "site", "site_id", "device_type"},
+			labels,
 			nil,
 		),
 		omadaDevicePoeRemainWatts: prometheus.NewDesc("omada_device_poe_remain_watts",
 			"The remaining amount of PoE power for the device in watts.",
-			[]string{"device", "model", "version", "ip", "mac", "site", "site_id", "device_type"},
+			labels,
 			nil,
 		),
 		client: c,

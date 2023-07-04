@@ -66,4 +66,6 @@ type portStatus struct {
 	LinkSpeed  float64 `json:"linkSpeed"`
 	PoePower   float64 `json:"poePower"`
 	Poe        bool    `json:"poe"`
+	Rx         float64 `json:"rx"`
+	Tx         float64 `json:"tx"`
 }
