@@ -11,7 +11,7 @@ import (
 
 // gets clients by switch mac address
 func (c *Client) GetClientByPort(switchMac string, port float64) (*NetworkClient, error) {
-	clients, err := c.getClientsWithFilters(true, switchMac)
+	clients, _, err := c.getClientsWithFilters(true, switchMac)
 	if err != nil {
 		return nil, err
 	}
@@ -24,34 +24,34 @@ func (c *Client) GetClientByPort(switchMac string, port float64) (*NetworkClient
 }
 
 // gets all clients
-func (c *Client) GetClients() ([]NetworkClient, error) {
-	client, err := c.getClientsWithFilters(false, "")
+func (c *Client) GetClients() ([]NetworkClient, *ClientStats, error) {
+	client, stats, err := c.getClientsWithFilters(false, "")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return client, nil
+	return client, stats, nil
 }
 
 // gets clients by filters in omada - currentl supports SwitchMac
-func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]NetworkClient, error) {
+func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]NetworkClient, *ClientStats, error) {
 	loggedIn, err := c.IsLoggedIn()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if !loggedIn {
 		log.Info().Msg(fmt.Sprintf("not logged in, logging in with user: %s", c.Config.Username))
 		err := c.Login()
 		if err != nil || c.token == "" {
 			log.Error().Err(err).Msg("Failed to login")
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/clients", c.Config.Host, c.omadaCID, c.SiteId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	q := req.URL.Query()
@@ -67,27 +67,36 @@ func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]Netwo
 	setHeaders(req, c.token)
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	log.Debug().Bytes("data", body).Msg("Received data from clients endpoint")
 
 	clientdata := clientResponse{}
 	err = json.Unmarshal(body, &clientdata)
 
-	return clientdata.Result.Data, err
+	return clientdata.Result.Data, &clientdata.Result.Stats, err
 }
 
 type clientResponse struct {
 	Result data `json:"result"`
 }
 type data struct {
-	Data []NetworkClient `json:"data"`
+	Data 		[]NetworkClient `json:"data"`
+	Stats		ClientStats		 `json:"clientStat"`
+}
+type ClientStats struct {
+	Total		float64 `json:"total"`
+	Wireless	float64 `json:"wireless"`
+	Wired		float64 `json:"wired"`
+	Num2g		float64 `json:"num2g"`
+	Num5g		float64 `json:"num5g"`
+	Num6g		float64 `json:"num6g"`
 }
 type NetworkClient struct {
 	Name        string  `json:"name"`
@@ -104,4 +113,9 @@ type NetworkClient struct {
 	SignalLevel float64 `json:"signalLevel"`
 	WifiMode    float64 `json:"wifiMode"`
 	Ssid        string  `json:"ssid"`
+	Rssi		float64 `json:"rssi"`
+	TrafficDown	float64 `json:"trafficDown"`
+	TrafficUp	float64 `json:"trafficUp"`
+	RxRate		float64 `json:"rxRate"`
+	TxRate		float64 `json:"txRate"`
 }
