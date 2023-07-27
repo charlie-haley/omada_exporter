@@ -104,4 +104,9 @@ type NetworkClient struct {
 	SignalLevel float64 `json:"signalLevel"`
 	WifiMode    float64 `json:"wifiMode"`
 	Ssid        string  `json:"ssid"`
+	Rssi		float64 `json:"rssi"`
+	TrafficDown	float64 `json:"trafficDown"`
+	TrafficUp	float64 `json:"trafficUp"`
+	RxRate		float64 `json:"rxRate"`
+	TxRate		float64 `json:"txRate"`
 }
