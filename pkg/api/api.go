@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/charlie-haley/omada_exporter/pkg/config"
+	log "github.com/rs/zerolog/log"
 )
 
 type Client struct {
@@ -62,12 +63,32 @@ func Configure(c *config.Config) (*Client, error) {
 	return client, nil
 }
 
-func setHeaders(r *http.Request, crsfToken string) {
-	r.Header.Add("Accept", "application/json")
-	r.Header.Add("Content-Type", "application/json; charset=UTF-8")
-	r.Header.Add("X-Requested-With", "XMLHttpRequest")
-	r.Header.Add("User-Agent", "omada_exporter")
-	r.Header.Add("Accept-Encoding", "gzip, deflate, br")
-	r.Header.Add("Connection", "keep-alive")
-	r.Header.Add("Csrf-Token", crsfToken)
+func (c *Client) makeRequest(req *http.Request) (*http.Response, error) {
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("User-Agent", "omada_exporter")
+	req.Header.Add("Connection", "keep-alive")
+
+	if c.token != "" {
+		req.Header.Add("Csrf-Token", c.token)
+	}
+
+	return c.httpClient.Do(req)
+}
+
+func (c *Client) makeLoggedInRequest(req *http.Request) (*http.Response, error) {
+	loggedIn, err := c.IsLoggedIn()
+	if err != nil {
+		return nil, err
+	}
+	if !loggedIn {
+		log.Info().Msg(fmt.Sprintf("not logged in, logging in with user: %s", c.Config.Username))
+		err := c.Login()
+		if err != nil || c.token == "" {
+			log.Error().Err(err).Msg("failed to login")
+			return nil, err
+		}
+	}
+
+	return c.makeRequest(req)
 }
