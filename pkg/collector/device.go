@@ -51,8 +51,8 @@ func (c *deviceCollector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(c.omadaDeviceMemPercentage, prometheus.GaugeValue, item.MemUtil, labels...)
 		ch <- prometheus.MustNewConstMetric(c.omadaDeviceNeedUpgrade, prometheus.GaugeValue, needUpgrade, labels...)
 		if item.Type == "ap" {
-			ch <- prometheus.MustNewConstMetric(c.omadaDeviceTxRate, prometheus.CounterValue, item.TxRate, labels...)
-			ch <- prometheus.MustNewConstMetric(c.omadaDeviceRxRate, prometheus.CounterValue, item.RxRate, labels...)
+			ch <- prometheus.MustNewConstMetric(c.omadaDeviceTxRate, prometheus.GaugeValue, item.TxRate, labels...)
+			ch <- prometheus.MustNewConstMetric(c.omadaDeviceRxRate, prometheus.GaugeValue, item.RxRate, labels...)
 		}
 		if item.Type == "switch" {
 			ch <- prometheus.MustNewConstMetric(c.omadaDevicePoeRemainWatts, prometheus.GaugeValue, item.PoeRemain, labels...)
