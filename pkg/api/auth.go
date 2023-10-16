@@ -18,9 +18,7 @@ func (c *Client) IsLoggedIn() (bool, error) {
 		return false, err
 	}
 
-	setHeaders(req, c.token)
-
-	res, err := c.httpClient.Do(req)
+	res, err := c.makeRequest(req)
 	if err != nil {
 		return false, err
 	}
@@ -76,8 +74,8 @@ func (c *Client) Login() error {
 		return err
 	}
 
-	setHeaders(req, "")
-	res, err := c.httpClient.Do(req)
+	req.Header.Add("Content-Type", "application/json; charset=UTF-8")
+	res, err := c.makeRequest(req)
 	if err != nil {
 		return err
 	}

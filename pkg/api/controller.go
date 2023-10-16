@@ -10,27 +10,13 @@ import (
 )
 
 func (c *Client) GetController() (*Controller, error) {
-	loggedIn, err := c.IsLoggedIn()
-	if err != nil {
-		return nil, err
-	}
-	if !loggedIn {
-		log.Info().Msg(fmt.Sprintf("not logged in, logging in with user: %s", c.Config.Username))
-		err := c.Login()
-		if err != nil || c.token == "" {
-			log.Error().Err(err).Msg("failed to login")
-			return nil, err
-		}
-	}
-
 	url := fmt.Sprintf("%s/%s/api/v2/maintenance/controllerStatus?", c.Config.Host, c.omadaCID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	setHeaders(req, c.token)
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.makeLoggedInRequest(req)
 	if err != nil {
 		return nil, err
 	}
