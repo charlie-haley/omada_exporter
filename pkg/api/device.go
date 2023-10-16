@@ -76,4 +76,6 @@ type Device struct {
 	RxRate      float64 `json:"rxRate"`
 	PoeRemain   float64 `json:"poeRemain"`
 	Ports       []Port  `json:"ports"`
+	Download    int64   `json:"download"`
+	Upload      int64   `json:"upload"`
 }

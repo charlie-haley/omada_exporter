@@ -14,6 +14,8 @@ type deviceCollector struct {
 	omadaDeviceTxRate         *prometheus.Desc
 	omadaDeviceRxRate         *prometheus.Desc
 	omadaDevicePoeRemainWatts *prometheus.Desc
+	omadaDeviceDownload       *prometheus.Desc
+	omadaDeviceUpload         *prometheus.Desc
 	client                    *api.Client
 }
 
@@ -26,6 +28,8 @@ func (c *deviceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.omadaDeviceTxRate
 	ch <- c.omadaDeviceRxRate
 	ch <- c.omadaDevicePoeRemainWatts
+	ch <- c.omadaDeviceDownload
+	ch <- c.omadaDeviceUpload
 }
 
 func (c *deviceCollector) Collect(ch chan<- prometheus.Metric) {
@@ -50,6 +54,8 @@ func (c *deviceCollector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(c.omadaDeviceCpuPercentage, prometheus.GaugeValue, item.CpuUtil, labels...)
 		ch <- prometheus.MustNewConstMetric(c.omadaDeviceMemPercentage, prometheus.GaugeValue, item.MemUtil, labels...)
 		ch <- prometheus.MustNewConstMetric(c.omadaDeviceNeedUpgrade, prometheus.GaugeValue, needUpgrade, labels...)
+		ch <- prometheus.MustNewConstMetric(c.omadaDeviceDownload, prometheus.CounterValue, float64(item.Download), labels...)
+		ch <- prometheus.MustNewConstMetric(c.omadaDeviceUpload, prometheus.CounterValue, float64(item.Upload), labels...)
 		if item.Type == "ap" {
 			ch <- prometheus.MustNewConstMetric(c.omadaDeviceTxRate, prometheus.CounterValue, item.TxRate, labels...)
 			ch <- prometheus.MustNewConstMetric(c.omadaDeviceRxRate, prometheus.CounterValue, item.RxRate, labels...)
