@@ -120,7 +120,7 @@ Name|Description|Labels
  omada_device_rx_rate |  The rx rate of the device. | device, model, version, ip, mac, site, site_id, device_type
  omada_device_poe_remain_watts |  The remaining amount of PoE power for the device in watts. | device, model, version, ip, mac, site, site_id, device_type
  omada_client_download_activity_bytes |  The current download activity for the client in bytes. | client, vendor, switch_port, vlan_id, ip, mac, site, site_id, ap_name, ssid, wifi_mode
- omada_client_signal_dbm |  The signal level for the wireless client in dBm. | client, vendor, ip, mac, ap_name, site, site_id, ssid, wifi_mode
+ omada_client_signal_pct |  The signal quality for the wireless client in percent. | client, vendor, ip, mac, ap_name, site, site_id, ssid, wifi_mode
  omada_port_power_watts |  The current PoE usage of the port in watts. | device, device_mac, client, vendor, switch_port, name, switch_mac, switch_id, vlan_id, profile, site, site_id
  omada_port_link_status |  A boolean representing the link status of the port. | device, device_mac, client, vendor, switch_port, name, switch_mac, switch_id, vlan_id, profile, site, site_id
  omada_port_link_speed_mbps |  Port link speed in mbps. This is the capability of the connection, not the active throughput. | device, device_mac, client, vendor, switch_port, name, switch_mac, switch_id, vlan_id, profile, site, site_id
