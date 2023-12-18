@@ -48,6 +48,12 @@ func Run() {
 				os.Exit(0)
 				return nil
 			}},
+		{Name: "mdocs", Aliases: []string{"md"}, Usage: "prints the metric docs.",
+			Action: func(c *cli.Context) error {
+				mdocs()
+				os.Exit(0)
+				return nil
+			}},
 	}
 	app.Action = run
 
@@ -88,10 +94,9 @@ func run(c *cli.Context) error {
 	}
 
 	// register omada collectors
-	prometheus.MustRegister(collector.NewClientCollector(client))
-	prometheus.MustRegister(collector.NewControllerCollector(client))
-	prometheus.MustRegister(collector.NewDeviceCollector(client))
-	prometheus.MustRegister(collector.NewPortCollector(client))
+	for _, c := range collectors(client) {
+		prometheus.MustRegister(c)
+	}
 
 	log.Info().Msg(fmt.Sprintf("listening on :%s", conf.Port))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -115,4 +120,45 @@ func run(c *cli.Context) error {
 	}
 
 	return nil
+}
+
+// mdocs just spits out the metrics descriptions and exits
+func mdocs() {
+
+	// Describe wants to return descriptions via a channel, so make and fill a channel.
+	dc := make(chan *prometheus.Desc)
+	go func() {
+		// collectors can't Collect without a client, but Describe doesn't need one.
+		for _, c := range collectors(nil) {
+			c.Describe(dc)
+		}
+		close(dc)
+	}()
+
+	fmt.Fprintln(os.Stdout, "| Name | Description | Labels |\n|--|--|--|")
+
+	// drain the channel
+	for {
+		if description := <-dc; description != nil {
+			// Sure would be nice if the prometheus.Desc wasn't so opaque. This is gross and fragile.
+			d := description.String()
+			d = strings.Replace(d, `Desc{fqName: "`, "| ", 1)
+			d = strings.Replace(d, `", help: "`, " | ", 1)
+			d = strings.Replace(d, `", constLabels: {}, variableLabels: [`, " | ", 1)
+			d = strings.Replace(d, `]}`, " | ", 1)
+			fmt.Fprintln(os.Stdout, d)
+		} else {
+			break
+		}
+	}
+}
+
+// collectors returns the full complement of configured collectors.
+func collectors(client *api.Client) []prometheus.Collector {
+	return []prometheus.Collector{
+		collector.NewClientCollector(client),
+		collector.NewControllerCollector(client),
+		collector.NewDeviceCollector(client),
+		collector.NewPortCollector(client),
+	}
 }
