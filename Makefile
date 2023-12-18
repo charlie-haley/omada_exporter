@@ -2,4 +2,4 @@ lint:
 	golangci-lint run
 
 generate-metrics-table:
-	sh ./scripts/metric-markdown-table.sh
+	go run main.go --host dummy --username dummy --password dummy mdocs > gen-metrics-table.md
