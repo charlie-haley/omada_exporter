@@ -11,6 +11,7 @@ import (
 type clientCollector struct {
 	omadaClientDownloadActivityBytes *prometheus.Desc
 	omadaClientSignalPct             *prometheus.Desc
+	omadaClientSignalNoiseDbm        *prometheus.Desc
 	omadaClientRssiDbm               *prometheus.Desc
 	omadaClientTrafficDown           *prometheus.Desc
 	omadaClientTrafficUp             *prometheus.Desc
@@ -23,6 +24,7 @@ type clientCollector struct {
 func (c *clientCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.omadaClientDownloadActivityBytes
 	ch <- c.omadaClientSignalPct
+	ch <- c.omadaClientSignalNoiseDbm
 	ch <- c.omadaClientRssiDbm
 	ch <- c.omadaClientTrafficDown
 	ch <- c.omadaClientTrafficUp
@@ -73,6 +75,7 @@ func (c *clientCollector) Collect(ch chan<- prometheus.Metric) {
 					item.HostName, item.Vendor, item.Ip, item.Mac, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid)
 			}
 			CollectWirelessMetrics(c.omadaClientSignalPct, prometheus.GaugeValue, item.SignalLevel)
+			CollectWirelessMetrics(c.omadaClientSignalNoiseDbm, prometheus.GaugeValue, item.SignalNoise)
 			CollectWirelessMetrics(c.omadaClientRssiDbm, prometheus.GaugeValue, item.Rssi)
 			CollectWirelessMetrics(c.omadaClientTrafficDown, prometheus.CounterValue, item.TrafficDown)
 			CollectWirelessMetrics(c.omadaClientTrafficUp, prometheus.CounterValue, item.TrafficUp)
@@ -114,6 +117,12 @@ func NewClientCollector(c *api.Client) *clientCollector {
 
 		omadaClientSignalPct: prometheus.NewDesc("omada_client_signal_pct",
 			"The signal quality for the wireless client in percent.",
+			client_labels,
+			nil,
+		),
+
+		omadaClientSignalNoiseDbm: prometheus.NewDesc("omada_client_snr_dbm",
+			"The signal to noise ration for the wireless client in dBm.",
 			client_labels,
 			nil,
 		),
