@@ -67,12 +67,22 @@ func (c *clientCollector) Collect(ch chan<- prometheus.Metric) {
 	for _, item := range clients {
 		vlanId := fmt.Sprintf("%.0f", item.VlanId)
 		port := fmt.Sprintf("%.0f", item.Port)
+		cHostName := item.HostName
+		if cHostName == "" {
+			// A hostname field not be present, then fall back to the Name.
+			// Omada appears to populate the Name in this order of priority:
+			// 1. A manually set name
+			// 2. Same as the hostname, if the hostname is known
+			// 3. The mac address
+			cHostName = item.Name
+		}
+
 		if item.Wireless {
 			wifiMode := FormatWifiMode(int(item.WifiMode))
 
 			CollectWirelessMetrics := func(desc *prometheus.Desc, valueType prometheus.ValueType, value float64) {
 				ch <- prometheus.MustNewConstMetric(desc, valueType, value,
-					item.HostName, item.Vendor, item.Ip, item.Mac, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid)
+					cHostName, item.Vendor, item.Ip, item.Mac, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid)
 			}
 			CollectWirelessMetrics(c.omadaClientSignalPct, prometheus.GaugeValue, item.SignalLevel)
 			CollectWirelessMetrics(c.omadaClientSignalNoiseDbm, prometheus.GaugeValue, item.SignalNoise)
@@ -84,12 +94,12 @@ func (c *clientCollector) Collect(ch chan<- prometheus.Metric) {
 
 			totals[wifiMode] += 1
 			ch <- prometheus.MustNewConstMetric(c.omadaClientDownloadActivityBytes, prometheus.GaugeValue, item.Activity,
-				item.HostName, item.Vendor, item.Ip, item.Mac, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid, "", "")
+				cHostName, item.Vendor, item.Ip, item.Mac, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid, "", "")
 		}
 		if !item.Wireless {
 			totals["wired"] += 1
 			ch <- prometheus.MustNewConstMetric(c.omadaClientDownloadActivityBytes, prometheus.GaugeValue, item.Activity,
-				item.HostName, item.Vendor, item.Ip, item.Mac, site, client.SiteId, "wired", "", "", "", port, vlanId)
+				cHostName, item.Vendor, item.Ip, item.Mac, site, client.SiteId, "wired", "", "", "", port, vlanId)
 		}
 	}
 
