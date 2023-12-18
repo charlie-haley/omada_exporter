@@ -11,11 +11,11 @@ import (
 type clientCollector struct {
 	omadaClientDownloadActivityBytes *prometheus.Desc
 	omadaClientSignalDbm             *prometheus.Desc
-	omadaClientRssiDbm				 *prometheus.Desc
-	omadaClientTrafficDown			 *prometheus.Desc
-	omadaClientTrafficUp			 *prometheus.Desc
-	omadaClientTxRate				 *prometheus.Desc
-	omadaClientRxRate				 *prometheus.Desc
+	omadaClientRssiDbm               *prometheus.Desc
+	omadaClientTrafficDown           *prometheus.Desc
+	omadaClientTrafficUp             *prometheus.Desc
+	omadaClientTxRate                *prometheus.Desc
+	omadaClientRxRate                *prometheus.Desc
 	omadaClientConnectedTotal        *prometheus.Desc
 	client                           *api.Client
 }
@@ -23,16 +23,16 @@ type clientCollector struct {
 func (c *clientCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.omadaClientDownloadActivityBytes
 	ch <- c.omadaClientSignalDbm
-	ch <- c.omadaClientRssiDbm		
-	ch <- c.omadaClientTrafficDown	
-	ch <- c.omadaClientTrafficUp	
-	ch <- c.omadaClientTxRate		
-	ch <- c.omadaClientRxRate	
+	ch <- c.omadaClientRssiDbm
+	ch <- c.omadaClientTrafficDown
+	ch <- c.omadaClientTrafficUp
+	ch <- c.omadaClientTxRate
+	ch <- c.omadaClientRxRate
 	ch <- c.omadaClientConnectedTotal
 }
 
 func FormatWifiMode(wifiMode int) string {
-	mapping := map[int]string {
+	mapping := map[int]string{
 		0: "802.11a",
 		1: "802.11b",
 		2: "802.11g",
@@ -70,7 +70,7 @@ func (c *clientCollector) Collect(ch chan<- prometheus.Metric) {
 
 			CollectWirelessMetrics := func(desc *prometheus.Desc, valueType prometheus.ValueType, value float64) {
 				ch <- prometheus.MustNewConstMetric(desc, valueType, value,
-					item.HostName, item.Vendor, item.Ip, item.Mac, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid)	
+					item.HostName, item.Vendor, item.Ip, item.Mac, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid)
 			}
 			CollectWirelessMetrics(c.omadaClientSignalDbm, prometheus.GaugeValue, -item.SignalLevel)
 			CollectWirelessMetrics(c.omadaClientRssiDbm, prometheus.GaugeValue, item.Rssi)
