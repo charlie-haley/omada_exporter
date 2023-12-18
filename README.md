@@ -110,23 +110,32 @@ omada:
 ```
 
 ## 📊 Metrics
-Name|Description|Labels
+| Name | Description | Labels |
 |--|--|--|
- omada_device_uptime_seconds |  Uptime of the device. | device, model, version, ip, mac, site, site_id, device_type
- omada_device_cpu_percentage |  Percentage of device CPU used. | device, model, version, ip, mac, site, site_id, device_type
- omada_device_mem_percentage |  Percentage of device Memory used. | device, model, version, ip, mac, site, site_id, device_type
- omada_device_need_upgrade |  A boolean on whether the device needs an upgrade. | device, model, version, ip, mac, site, site_id, device_type
- omada_device_tx_rate |  The tx rate of the device. | device, model, version, ip, mac, site, site_id, device_type
- omada_device_rx_rate |  The rx rate of the device. | device, model, version, ip, mac, site, site_id, device_type
- omada_device_poe_remain_watts |  The remaining amount of PoE power for the device in watts. | device, model, version, ip, mac, site, site_id, device_type
- omada_client_download_activity_bytes |  The current download activity for the client in bytes. | client, vendor, switch_port, vlan_id, ip, mac, site, site_id, ap_name, ssid, wifi_mode
- omada_client_signal_dbm |  The signal level for the wireless client in dBm. | client, vendor, ip, mac, ap_name, site, site_id, ssid, wifi_mode
- omada_port_power_watts |  The current PoE usage of the port in watts. | device, device_mac, client, vendor, switch_port, name, switch_mac, switch_id, vlan_id, profile, site, site_id
- omada_port_link_status |  A boolean representing the link status of the port. | device, device_mac, client, vendor, switch_port, name, switch_mac, switch_id, vlan_id, profile, site, site_id
- omada_port_link_speed_mbps |  Port link speed in mbps. This is the capability of the connection, not the active throughput. | device, device_mac, client, vendor, switch_port, name, switch_mac, switch_id, vlan_id, profile, site, site_id
- omada_port_link_rx |  Bytes recieved on a port. | device, device_mac, client, vendor, switch_port, name, switch_mac, switch_id, vlan_id, profile, site, site_id
- omada_port_link_tx |  Bytes transmitted on a port. | device, device_mac, client, vendor, switch_port, name, switch_mac, switch_id, vlan_id, profile, site, site_id
- omada_controller_uptime_seconds |  Uptime of the controller. | controller_name, model, controller_version, firmware_version, mac
- omada_controller_storage_used_bytes |  Storage used on the controller. | storage_name, controller_name, model, controller_version, firmware_version, mac
- omada_controller_storage_available_bytes |  Total storage available for the controller. | storage_name, controller_name, model, controller_version, firmware_version, mac
- omada_client_connected_total |  Total number of connected clients. | site, site_id
+| omada_client_download_activity_bytes | The current download activity for the client in bytes. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid switch_port vlan_id |
+| omada_client_signal_pct | The signal quality for the wireless client in percent. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
+| omada_client_snr_dbm | The signal to noise ration for the wireless client in dBm. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
+| omada_client_rssi_dbm | The RSSI for the wireless client in dBm. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
+| omada_client_traffic_down_bytes | Total bytes received by wireless client. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
+| omada_client_traffic_up_bytes | Total bytes sent by wireless client. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
+| omada_client_tx_rate | TX rate of wireless client. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
+| omada_client_rx_rate | RX rate of wireless client. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
+| omada_client_connected_total | Total number of connected clients. | site site_id connection_mode wifi_mode |
+| omada_controller_uptime_seconds | Uptime of the controller. | controller_name model controller_version firmware_version mac site site_id |
+| omada_controller_storage_used_bytes | Storage used on the controller. | storage_name controller_name model controller_version firmware_version mac site site_id |
+| omada_controller_storage_available_bytes | Total storage available for the controller. | storage_name controller_name model controller_version firmware_version mac site site_id |
+| omada_device_uptime_seconds | Uptime of the device. | device model version ip mac site site_id device_type |
+| omada_device_uptime_seconds | Uptime of the device. | device model version ip mac site site_id device_type |
+| omada_device_cpu_percentage | Percentage of device CPU used. | device model version ip mac site site_id device_type |
+| omada_device_mem_percentage | Percentage of device Memory used. | device model version ip mac site site_id device_type |
+| omada_device_need_upgrade | A boolean on whether the device needs an upgrade. | device model version ip mac site site_id device_type |
+| omada_device_tx_rate | The tx rate of the device. | device model version ip mac site site_id device_type |
+| omada_device_rx_rate | The rx rate of the device. | device model version ip mac site site_id device_type |
+| omada_device_poe_remain_watts | The remaining amount of PoE power for the device in watts. | device model version ip mac site site_id device_type |
+| omada_device_download | Device download traffic. | device model version ip mac site site_id device_type |
+| omada_device_upload | Device upload traffic. | device model version ip mac site site_id device_type |
+| omada_port_power_watts | The current PoE usage of the port in watts. | device device_mac client vendor switch_port name switch_mac switch_id vlan_id profile site site_id |
+| omada_port_link_status | A boolean representing the link status of the port. | device device_mac client vendor switch_port name switch_mac switch_id vlan_id profile site site_id |
+| omada_port_link_speed_mbps | Port link speed in mbps. This is the capability of the connection, not the active throughput. | device device_mac client vendor switch_port name switch_mac switch_id vlan_id profile site site_id |
+| omada_port_link_rx | Bytes recieved on a port. | device device_mac client vendor switch_port name switch_mac switch_id vlan_id profile site site_id |
+| omada_port_link_tx | Bytes transmitted on a port. | device device_mac client vendor switch_port name switch_mac switch_id vlan_id profile site site_id |
