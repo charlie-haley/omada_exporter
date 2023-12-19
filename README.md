@@ -114,7 +114,7 @@ omada:
 |--|--|--|
 | omada_client_download_activity_bytes | The current download activity for the client in bytes. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid switch_port vlan_id |
 | omada_client_signal_pct | The signal quality for the wireless client in percent. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
-| omada_client_snr_dbm | The signal to noise ration for the wireless client in dBm. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
+| omada_client_snr_dbm | The signal to noise ratio for the wireless client in dBm. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
 | omada_client_rssi_dbm | The RSSI for the wireless client in dBm. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
 | omada_client_traffic_down_bytes | Total bytes received by wireless client. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
 | omada_client_traffic_up_bytes | Total bytes sent by wireless client. | client vendor ip mac host_name site site_id connection_mode wifi_mode ap_name ssid |
