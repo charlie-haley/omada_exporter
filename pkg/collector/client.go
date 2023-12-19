@@ -123,7 +123,7 @@ func NewClientCollector(c *api.Client) *clientCollector {
 		),
 
 		omadaClientSignalNoiseDbm: prometheus.NewDesc("omada_client_snr_dbm",
-			"The signal to noise ration for the wireless client in dBm.",
+			"The signal to noise ratio for the wireless client in dBm.",
 			client_labels,
 			nil,
 		),
