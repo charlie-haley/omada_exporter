@@ -73,7 +73,7 @@ func (c *clientCollector) Collect(ch chan<- prometheus.Metric) {
 
 			CollectWirelessMetrics := func(desc *prometheus.Desc, valueType prometheus.ValueType, value float64) {
 				ch <- prometheus.MustNewConstMetric(desc, valueType, value,
-					item.Name, item.Vendor, item.Ip, item.Mac, item.HostName, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid)
+					item.Name, item.Vendor, item.Ip, item.Mac, item.HostName, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid, vlanId)
 			}
 			CollectWirelessMetrics(c.omadaClientSignalPct, prometheus.GaugeValue, item.SignalLevel)
 			CollectWirelessMetrics(c.omadaClientSignalNoiseDbm, prometheus.GaugeValue, item.SignalNoise)
@@ -85,12 +85,12 @@ func (c *clientCollector) Collect(ch chan<- prometheus.Metric) {
 
 			totals[wifiMode] += 1
 			ch <- prometheus.MustNewConstMetric(c.omadaClientDownloadActivityBytes, prometheus.GaugeValue, item.Activity,
-				item.Name, item.Vendor, item.Ip, item.Mac, item.HostName, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid, "", "")
+				item.Name, item.Vendor, item.Ip, item.Mac, item.HostName, site, client.SiteId, "wireless", wifiMode, item.ApName, item.Ssid, vlanId, "")
 		}
 		if !item.Wireless {
 			totals["wired"] += 1
 			ch <- prometheus.MustNewConstMetric(c.omadaClientDownloadActivityBytes, prometheus.GaugeValue, item.Activity,
-				item.Name, item.Vendor, item.Ip, item.Mac, item.HostName, site, client.SiteId, "wired", "", "", "", port, vlanId)
+				item.Name, item.Vendor, item.Ip, item.Mac, item.HostName, site, client.SiteId, "wired", "", "", "", vlanId, port)
 		}
 	}
 
@@ -106,8 +106,8 @@ func (c *clientCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 func NewClientCollector(c *api.Client) *clientCollector {
-	client_labels := []string{"client", "vendor", "ip", "mac", "host_name", "site", "site_id", "connection_mode", "wifi_mode", "ap_name", "ssid"}
-	wired_client_labels := append(client_labels, "switch_port", "vlan_id")
+	client_labels := []string{"client", "vendor", "ip", "mac", "host_name", "site", "site_id", "connection_mode", "wifi_mode", "ap_name", "ssid", "vlan_id"}
+	wired_client_labels := append(client_labels, "switch_port")
 
 	return &clientCollector{
 		omadaClientDownloadActivityBytes: prometheus.NewDesc("omada_client_download_activity_bytes",
