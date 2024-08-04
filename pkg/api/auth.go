@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 )
 
 func (c *Client) IsLoggedIn() (bool, error) {
@@ -41,27 +40,37 @@ func (c *Client) IsLoggedIn() (bool, error) {
 }
 
 // one of the "quirks" of the omada API - it requires a CID to be part of the path
-// fetching this from the path after redirect seems like the best way
 func (c *Client) getCid() (string, error) {
-	host := c.Config.Host
-	req, err := http.NewRequest("GET", host, nil)
+	url := fmt.Sprintf("%s/api/info", c.Config.Host)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
 	}
 
-	res, err := c.httpClient.Do(req)
+	res, err := c.makeRequest(req)
 	if err != nil {
 		return "", err
 	}
+
 	defer res.Body.Close()
 
-	location := res.Request.URL.Path
+	var infoResponse struct {
+		ErrorCode int    `json:"errorCode"`
+		Msg       string `json:"msg"`
+		Result    struct {
+			OmadaCID string `json:"omadacId"`
+		}
+	}
+	err = json.NewDecoder(res.Body).Decode(&infoResponse)
+	if err != nil {
+		return "", err
+	}
 
-	// remove `/login` path from url
-	location = strings.Replace(location, "/login", "", -1)
+	if infoResponse.Result.OmadaCID == "" {
+		return "", fmt.Errorf("no CID found in response")
+	}
 
-	// trim first rune from string - leading `/`
-	return location[1:], nil
+	return infoResponse.Result.OmadaCID, nil
 }
 
 func (c *Client) Login() error {
