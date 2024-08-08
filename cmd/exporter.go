@@ -94,8 +94,12 @@ func run(c *cli.Context) error {
 	}
 
 	// register omada collectors
-	for _, c := range collectors(client) {
+	for name, c := range collectors(client) {
 		prometheus.MustRegister(c)
+
+		reg := prometheus.NewRegistry()
+		reg.MustRegister(c)
+		http.Handle(fmt.Sprintf("/metrics/%s", name), promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 	}
 
 	log.Info().Msg(fmt.Sprintf("listening on :%s", conf.Port))
@@ -108,6 +112,18 @@ func run(c *cli.Context) error {
 			<h1>omada_exporter</h1>
 			<p>
 				<a href="/metrics">Metrics</a>
+			</p>
+			<p>
+				<a href="/metrics/client">Client Metrics</a>
+			</p>
+			<p>
+				<a href="/metrics/controller">Controller Metrics</a>
+			</p>
+			<p>
+				<a href="/metrics/device">Device Metrics</a>
+			</p>
+			<p>
+				<a href="/metrics/port">Port Metrics</a>
 			</p>
     	</body>
     </html>`))
@@ -153,12 +169,12 @@ func mdocs() {
 	}
 }
 
-// collectors returns the full complement of configured collectors.
-func collectors(client *api.Client) []prometheus.Collector {
-	return []prometheus.Collector{
-		collector.NewClientCollector(client),
-		collector.NewControllerCollector(client),
-		collector.NewDeviceCollector(client),
-		collector.NewPortCollector(client),
+// collectors returns a map of configured collectors.
+func collectors(client *api.Client) map[string]prometheus.Collector {
+	return map[string]prometheus.Collector{
+		"client":     collector.NewClientCollector(client),
+		"controller": collector.NewControllerCollector(client),
+		"device":     collector.NewDeviceCollector(client),
+		"port":       collector.NewPortCollector(client),
 	}
 }
