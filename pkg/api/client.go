@@ -1,40 +1,94 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	log "github.com/rs/zerolog/log"
 )
 
-// gets clients by switch mac address
-func (c *Client) GetClientByPort(switchMac string, port float64) (*NetworkClient, error) {
-	clients, err := c.getClientsWithFilters(true, switchMac)
-	if err != nil {
-		return nil, err
-	}
-	for _, client := range clients {
-		if client.Port == port {
-			return &client, nil
-		}
-	}
-	return nil, nil
-}
-
-// gets all clients
+// GetClients fetches all active clients. It tries the OpenAPI v2 endpoint first
+// (POST with JSON body, same as the web UI), then falls back to the legacy api/v2
+// GET endpoint, and finally to the insight endpoint.
 func (c *Client) GetClients() ([]NetworkClient, error) {
-	client, err := c.getClientsWithFilters(false, "")
+	// Try OpenAPI v2 endpoint (works for all clients on v6.x, same as web UI)
+	clients, err := c.getClientsOpenAPI()
+	if err == nil {
+		return clients, nil
+	}
+	log.Debug().Err(err).Msg("OpenAPI clients endpoint failed, trying legacy endpoint")
+
+	// Fallback: try legacy api/v2 GET endpoint (works on older controllers)
+	clients, err = c.getClientsLegacy()
+	if err == nil {
+		return clients, nil
+	}
+	log.Debug().Err(err).Msg("Legacy clients endpoint failed, trying insight fallback")
+
+	// Final fallback: insight endpoint (limited data but always works)
+	clients, insightErr := c.getClientsFromInsight()
+	if insightErr != nil {
+		return nil, fmt.Errorf("all client endpoints failed: openapi, legacy, insight (%v)", insightErr)
+	}
+
+	return clients, nil
+}
+
+// getClientsOpenAPI fetches clients via the OpenAPI v2 POST endpoint.
+// This is the same endpoint the Omada web UI uses and returns full data
+// for both wired and wireless clients, even with Viewer role on v6.x.
+func (c *Client) getClientsOpenAPI() ([]NetworkClient, error) {
+	url := fmt.Sprintf("%s/openapi/v2/%s/sites/%s/clients", c.Config.Host, c.omadaCID, c.SiteId)
+
+	filters := map[string]interface{}{"active": true}
+
+	reqBody := map[string]interface{}{
+		"filters":  filters,
+		"page":     1,
+		"pageSize": 1000,
+		"scope":    1,
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err
 	}
 
-	return client, nil
+	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json;charset=utf-8")
+	req.Header.Set("Omada-Request-Source", "web-local")
+
+	resp, err := c.makeLoggedInRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug().Bytes("data", body).Msg("Received data from OpenAPI clients endpoint")
+
+	clients, err := parseListResult[NetworkClient](body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse OpenAPI clients: %w", err)
+	}
+
+	log.Info().Int("clients", len(clients)).Msg("Fetched clients via OpenAPI v2 endpoint")
+	return clients, nil
 }
 
-// gets clients by filters in omada - currentl supports SwitchMac
-func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]NetworkClient, error) {
+// getClientsLegacy fetches clients via the legacy api/v2 GET endpoint.
+// This works on older Omada controllers but may fail on v6.x for Viewer role.
+func (c *Client) getClientsLegacy() ([]NetworkClient, error) {
 	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/clients", c.Config.Host, c.omadaCID, c.SiteId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -45,9 +99,6 @@ func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]Netwo
 	q.Add("currentPage", "1")
 	q.Add("currentPageSize", "10000")
 	q.Add("filters.active", "true")
-	if filtersEnabled {
-		q.Add("filters.switchMac=", mac)
-	}
 
 	req.URL.RawQuery = q.Encode()
 
@@ -61,20 +112,89 @@ func (c *Client) getClientsWithFilters(filtersEnabled bool, mac string) ([]Netwo
 	if err != nil {
 		return nil, err
 	}
-	log.Debug().Bytes("data", body).Msg("Received data from clients endpoint")
+	log.Debug().Bytes("data", body).Msg("Received data from legacy clients endpoint")
 
-	clientdata := clientResponse{}
-	err = json.Unmarshal(body, &clientdata)
+	clients, err := parseListResult[NetworkClient](body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse legacy clients: %w", err)
+	}
 
-	return clientdata.Result.Data, err
+	return clients, nil
 }
 
-type clientResponse struct {
-	Result data `json:"result"`
+// getClientsFromInsight fetches clients from the insight endpoint and filters
+// for recently active ones. This endpoint is available to Viewer roles on v6.x
+// controllers where the standard clients endpoint returns "General error."
+func (c *Client) getClientsFromInsight() ([]NetworkClient, error) {
+	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/insight/clients", c.Config.Host, c.omadaCID, c.SiteId)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	q := req.URL.Query()
+	q.Add("currentPage", "1")
+	q.Add("currentPageSize", "10000")
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := c.makeLoggedInRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug().Bytes("data", body).Msg("Received data from insight/clients endpoint")
+
+	raw, err := checkResponse(body)
+	if err != nil {
+		return nil, err
+	}
+
+	type insightClient struct {
+		Name     string  `json:"name"`
+		Mac      string  `json:"mac"`
+		Wireless bool    `json:"wireless"`
+		Download float64 `json:"download"`
+		Upload   float64 `json:"upload"`
+		LastSeen int64   `json:"lastSeen"`
+		VlanId   float64 `json:"vid"`
+	}
+
+	// Parse paginated result
+	var paginated struct {
+		Data []insightClient `json:"data"`
+	}
+	if err := json.Unmarshal(raw, &paginated); err != nil {
+		return nil, fmt.Errorf("failed to parse insight clients: %w", err)
+	}
+
+	// Filter for active clients (seen in the last 10 minutes)
+	cutoff := time.Now().Add(-10 * time.Minute).UnixMilli()
+	var clients []NetworkClient
+	for _, ic := range paginated.Data {
+		if ic.LastSeen < cutoff {
+			continue
+		}
+		clients = append(clients, NetworkClient{
+			Name:        ic.Name,
+			Mac:         ic.Mac,
+			Wireless:    ic.Wireless,
+			TrafficDown: ic.Download,
+			TrafficUp:   ic.Upload,
+			VlanId:      ic.VlanId,
+		})
+	}
+
+	log.Info().Int("active", len(clients)).Int("total", len(paginated.Data)).
+		Msg("Using insight/clients fallback (some metrics unavailable)")
+
+	return clients, nil
 }
-type data struct {
-	Data []NetworkClient `json:"data"`
-}
+
 type NetworkClient struct {
 	Name        string  `json:"name"`
 	HostName    string  `json:"hostName"`

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,25 +27,14 @@ func (c *Client) GetDevices() ([]Device, error) {
 	}
 	log.Debug().Bytes("data", body).Msg("Received data from devices endpoint")
 
-	devicedata := deviceResponse{}
-	err = json.Unmarshal(body, &devicedata)
-
-	for i, d := range devicedata.Result {
-		if d.Type == "switch" {
-			switchPorts, err := c.GetPorts(d.Mac)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get ports: %s", err)
-			}
-			devicedata.Result[i].Ports = switchPorts
-		}
+	devices, err := parseListResult[Device](body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse devices: %w", err)
 	}
 
-	return devicedata.Result, err
+	return devices, nil
 }
 
-type deviceResponse struct {
-	Result []Device `json:"result"`
-}
 type Device struct {
 	Name        string  `json:"name"`
 	Type        string  `json:"type"`

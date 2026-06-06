@@ -1,5 +1,5 @@
 # omada_exporter
-![docker-publish](https://github.com/charlie-haley/omada_exporter/actions/workflows/docker-publish.yml/badge.svg)
+![docker-publish](https://github.com/Leicas/omada_exporter/actions/workflows/docker-publish.yml/badge.svg)
 <p align="center" style="text-align: center">
     <img src="./docs/images/logo-dark-mode.svg#gh-dark-mode-only" width="70%"><br/>
     <img src="./docs/images/logo-light-mode.svg#gh-light-mode-only" width="70%"><br/>
@@ -27,10 +27,10 @@ docker run -d \
     -e OMADA_USER='exporter' \
     -e OMADA_PASS='mypassword' \
     -e OMADA_SITE='Default' \
-    chhaley/omada_exporter
+    ghcr.io/leicas/omada_exporter
 ```
 
-__There's also a GHCR mirror available if you'd prefer to not use Docker Hub. `ghcr.io/charlie-haley/omada_exporter`__
+> This is a fork of [charlie-haley/omada_exporter](https://github.com/charlie-haley/omada_exporter) with Omada v6.x compatibility fixes. Images are published to `ghcr.io/leicas/omada_exporter`.
 
 ### ☸️ Helm
 ```bash

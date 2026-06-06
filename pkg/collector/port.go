@@ -36,27 +36,50 @@ func (c *portCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
+	// Fetch all clients once and build a lookup map by (switchMac, port)
+	// This replaces N per-port API calls with a single call.
+	type portKey struct {
+		SwitchMac string
+		Port      float64
+	}
+	clientByPort := map[portKey]*api.NetworkClient{}
+	allClients, err := client.GetClients()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get clients for port mapping")
+	} else {
+		for i, cl := range allClients {
+			if cl.SwitchMac != "" {
+				clientByPort[portKey{cl.SwitchMac, cl.Port}] = &allClients[i]
+			}
+		}
+	}
+
 	for _, device := range devices {
+		if device.Type != "switch" {
+			continue
+		}
+
+		switchPorts, err := client.GetPorts(device.Mac)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to get ports")
+			continue
+		}
+
 		// The Omada exporter sometimes returns duplicate ports. e.g an 8 port switch will return 16 ports with identical ports
 		// this causes issues with Prometheus as it tries to register duplicate metrics. A bit of hacky fix, but here we remove
 		// duplicate ports to prevent this error.
-		ports := removeDuplicates(device.Ports)
+		ports := removeDuplicates(switchPorts)
 		for _, p := range ports {
 			var cHostName, cVendor, cVlanID string
 			linkSpeed := getPortByLinkSpeed(p.PortStatus.LinkSpeed)
 
-			portClient, err := client.GetClientByPort(device.Mac, p.Port)
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to get client by port")
-			}
-
-			port := fmt.Sprintf("%.0f", p.Port)
-			if portClient != nil {
+			if portClient, ok := clientByPort[portKey{device.Mac, p.Port}]; ok {
 				cHostName = portClient.HostName
 				cVendor = portClient.Vendor
 				cVlanID = fmt.Sprintf("%.0f", portClient.VlanId)
 			}
 
+			port := fmt.Sprintf("%.0f", p.Port)
 			labels := []string{device.Name, device.Mac, cHostName, cVendor, port, p.Name, p.SwitchMac, p.SwitchId, cVlanID, p.ProfileName, site, client.SiteId}
 
 			ch <- prometheus.MustNewConstMetric(c.omadaPortPowerWatts, prometheus.GaugeValue, p.PortStatus.PoePower, labels...)

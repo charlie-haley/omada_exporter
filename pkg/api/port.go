@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,15 +27,14 @@ func (c *Client) GetPorts(switchMac string) ([]Port, error) {
 	}
 	log.Debug().Bytes("data", body).Msg("Received data from ports endpoint")
 
-	portdata := portResponse{}
-	err = json.Unmarshal(body, &portdata)
+	ports, err := parseListResult[Port](body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse ports: %w", err)
+	}
 
-	return portdata.Result, err
+	return ports, nil
 }
 
-type portResponse struct {
-	Result []Port `json:"result"`
-}
 type Port struct {
 	Id          string     `json:"id"`
 	SwitchId    string     `json:"switchId"`

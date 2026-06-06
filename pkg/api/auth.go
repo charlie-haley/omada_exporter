@@ -8,6 +8,21 @@ import (
 	"net/http"
 )
 
+// isAuthError returns true if the error code indicates an authentication
+// or session problem that should trigger a re-login rather than a fatal error.
+func isAuthError(code int) bool {
+	switch code {
+	case -1200, // not authenticated (classic)
+		-1201,  // token expired
+		-30109, // invalid token
+		-40011, // token mismatch
+		-40012, // CSRF token mismatch
+		-1:     // generic error (often auth-related on newer firmware)
+		return true
+	}
+	return false
+}
+
 func (c *Client) IsLoggedIn() (bool, error) {
 	loginstatus := loginStatus{}
 
@@ -29,14 +44,20 @@ func (c *Client) IsLoggedIn() (bool, error) {
 	}
 
 	err = json.Unmarshal(body, &loginstatus)
-	if loginstatus.ErrorCode == -1200 {
+	if err != nil {
+		return false, err
+	}
+
+	// Treat any authentication-related error code as "not logged in"
+	// so that the caller can re-attempt login.
+	if isAuthError(loginstatus.ErrorCode) {
 		return false, nil
 	}
 	if loginstatus.ErrorCode != 0 {
-		return false, fmt.Errorf("invalid error code returned from API. Response Body: %s", string(body))
+		return false, fmt.Errorf("invalid error code %d returned from loginStatus API. Response Body: %s", loginstatus.ErrorCode, string(body))
 	}
 
-	return loginstatus.Result.Login, err
+	return loginstatus.Result.Login, nil
 }
 
 // one of the "quirks" of the omada API - it requires a CID to be part of the path
@@ -74,8 +95,6 @@ func (c *Client) getCid() (string, error) {
 }
 
 func (c *Client) Login() error {
-	logindata := loginResponse{}
-
 	url := fmt.Sprintf("%s/%s/api/v2/login", c.Config.Host, c.omadaCID)
 	jsonStr := []byte(fmt.Sprintf(`{"username":"%s","password":"%s"}`, c.Config.Username, c.Config.Password))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
@@ -95,6 +114,16 @@ func (c *Client) Login() error {
 		return err
 	}
 
+	// Check for API-level errors first
+	var apiResp struct {
+		ErrorCode int    `json:"errorCode"`
+		Msg       string `json:"msg"`
+	}
+	if err := json.Unmarshal(body, &apiResp); err == nil && apiResp.ErrorCode != 0 {
+		return fmt.Errorf("login failed with error %d: %s", apiResp.ErrorCode, apiResp.Msg)
+	}
+
+	logindata := loginResponse{}
 	err = json.Unmarshal(body, &logindata)
 	if err != nil {
 		return err

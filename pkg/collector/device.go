@@ -21,7 +21,6 @@ type deviceCollector struct {
 
 func (c *deviceCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.omadaDeviceUptimeSeconds
-	ch <- c.omadaDeviceUptimeSeconds
 	ch <- c.omadaDeviceCpuPercentage
 	ch <- c.omadaDeviceMemPercentage
 	ch <- c.omadaDeviceNeedUpgrade

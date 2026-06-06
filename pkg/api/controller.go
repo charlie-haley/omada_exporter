@@ -9,8 +9,9 @@ import (
 	log "github.com/rs/zerolog/log"
 )
 
+
 func (c *Client) GetController() (*Controller, error) {
-	url := fmt.Sprintf("%s/%s/api/v2/maintenance/controllerStatus?", c.Config.Host, c.omadaCID)
+	url := fmt.Sprintf("%s/%s/api/v2/maintenance/controllerStatus", c.Config.Host, c.omadaCID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -28,14 +29,18 @@ func (c *Client) GetController() (*Controller, error) {
 	}
 	log.Debug().Bytes("data", body).Msg("Received data from controllerStatus endpoint")
 
-	controllerData := controllerResponse{}
-	err = json.Unmarshal(body, &controllerData)
+	raw, err := checkResponse(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get controller status: %w", err)
+	}
 
-	return &controllerData.Result, err
-}
+	var controller Controller
+	err = json.Unmarshal(raw, &controller)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse controller status: %w", err)
+	}
 
-type controllerResponse struct {
-	Result Controller `json:"result"`
+	return &controller, nil
 }
 type Controller struct {
 	Name              string       `json:"name"`

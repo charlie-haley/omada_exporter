@@ -1,0 +1,7 @@
+# Dockerfile used by GoReleaser. GoReleaser cross-compiles the binary itself
+# and places it (named "omada-exporter") in the build context, so unlike the
+# plain ./Dockerfile this image only copies that prebuilt binary in.
+FROM alpine:3.18
+RUN apk add --no-cache ca-certificates
+COPY omada-exporter /usr/bin/omada-exporter
+ENTRYPOINT ["/usr/bin/omada-exporter"]
